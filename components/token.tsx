@@ -2,9 +2,8 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
-import { X } from "lucide-react"
-import type { Token, Character } from "@/lib/types"
+import type { Character, Token } from "@/lib/types"
+import { useEffect, useRef, useState } from "react"
 
 interface TokenProps {
   token: Token
@@ -73,13 +72,12 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
   return (
     <div
       ref={tokenRef}
-      className={`absolute w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold cursor-pointer select-none z-20 ${
-        character.type === "player"
-          ? "border-green-500 bg-green-100 text-green-700"
-          : character.type === "ally"
-            ? "border-blue-500 bg-blue-100 text-blue-700"
-            : "border-red-500 bg-red-100 text-red-700"
-      } ${token.isDead ? "grayscale opacity-50" : ""} ${isDragging ? "scale-110 shadow-lg" : ""}`}
+      className={`absolute w-8 h-8 scale-[1.2] rounded-full border-2 flex items-center justify-center text-xs font-bold cursor-pointer select-none z-20 ${character.type === "player"
+        ? "border-green-500 bg-green-100 text-green-700"
+        : character.type === "ally"
+          ? "border-blue-500 bg-blue-100 text-blue-700"
+          : "border-red-500 bg-red-100 text-red-700"
+        } ${token.isDead ? "grayscale-[0.7] opacity-70" : ""} ${isDragging ? "scale-110 shadow-lg" : ""}`}
       style={{
         left: token.x - 16,
         top: token.y - 16,
@@ -97,11 +95,6 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
         />
       ) : (
         character.name.charAt(0).toUpperCase()
-      )}
-      {token.isDead && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <X className="w-4 h-4 text-red-600" />
-        </div>
       )}
     </div>
   )
