@@ -14,8 +14,7 @@ interface DrawingToolProps {
   onDrawingsUpdate: (drawings: Drawing[]) => void
   drawings: Drawing[]
   gridSize: number
-  zoom: number
-  panOffset: { x: number; y: number }
+  // Remove zoom and panOffset props
 }
 
 export default function DrawingTool({
@@ -27,8 +26,6 @@ export default function DrawingTool({
   onDrawingsUpdate,
   drawings,
   gridSize,
-  zoom,
-  panOffset,
 }: DrawingToolProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
@@ -43,13 +40,13 @@ export default function DrawingTool({
       const scaleX = canvas.width / rect.width
       const scaleY = canvas.height / rect.height
 
-      // Account for zoom and pan offset
-      const x = ((e.clientX - rect.left) * scaleX - panOffset.x) / zoom
-      const y = ((e.clientY - rect.top) * scaleY - panOffset.y) / zoom
+      // Simple canvas coordinates without manual zoom/pan handling
+      const x = (e.clientX - rect.left) * scaleX
+      const y = (e.clientY - rect.top) * scaleY
 
       return { x, y }
     },
-    [zoom, panOffset],
+    [], // Remove zoom and panOffset dependencies
   )
 
   const eraseAtPoint = useCallback(
@@ -114,11 +111,7 @@ export default function DrawingTool({
       const newPath = [...currentPath, coords]
       setCurrentPath(newPath)
 
-      // Draw the line segment with zoom and pan adjustments
-      ctx.save()
-      ctx.scale(zoom, zoom)
-      ctx.translate(panOffset.x / zoom, panOffset.y / zoom)
-
+      // Draw the line segment without manual zoom/pan adjustments
       ctx.strokeStyle = color
       ctx.lineWidth = thickness
       ctx.lineCap = "round"
@@ -131,10 +124,8 @@ export default function DrawingTool({
         ctx.lineTo(coords.x, coords.y)
         ctx.stroke()
       }
-
-      ctx.restore()
     },
-    [isActive, mode, isDrawing, currentPath, color, thickness, getCanvasCoordinates, eraseAtPoint, zoom, panOffset],
+    [isActive, mode, isDrawing, currentPath, color, thickness, getCanvasCoordinates, eraseAtPoint], // Remove zoom, panOffset
   )
 
   const stopDrawing = useCallback(() => {
@@ -156,7 +147,7 @@ export default function DrawingTool({
     setCurrentPath([])
   }, [isDrawing, currentPath, color, thickness, onDrawingComplete, mode])
 
-  // Redraw canvas when drawings, zoom, or pan changes
+  // Redraw canvas when drawings change
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -176,11 +167,7 @@ export default function DrawingTool({
 
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Apply zoom and pan transformations
-      ctx.save()
-      ctx.scale(zoom, zoom)
-      ctx.translate(panOffset.x / zoom, panOffset.y / zoom)
-
+      // Draw without manual transformations since we're in a transformed container
       drawings.forEach((drawing) => {
         if (drawing.points.length < 2) return
 
@@ -199,8 +186,6 @@ export default function DrawingTool({
         })
         ctx.stroke()
       })
-
-      ctx.restore()
     }
 
     updateCanvasSize()
@@ -209,7 +194,7 @@ export default function DrawingTool({
     return () => {
       window.removeEventListener("resize", updateCanvasSize)
     }
-  }, [drawings, zoom, panOffset])
+  }, [drawings]) // Remove zoom, panOffset dependencies
 
   return (
     <canvas

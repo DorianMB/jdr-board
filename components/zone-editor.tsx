@@ -1029,8 +1029,6 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
               onDrawingsUpdate={updateDrawings}
               drawings={zone.drawings || []}
               gridSize={zone.gridSize}
-              zoom={zoom}
-              panOffset={panOffset}
             />
 
             {/* Tokens */}
