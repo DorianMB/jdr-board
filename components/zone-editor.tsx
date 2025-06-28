@@ -1045,7 +1045,8 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                   character={character}
                   gridSize={zone.gridSize}
                   onUpdate={(updates) => updateToken(token.id, updates)}
-                  editMode={editMode && !isPanning}
+                  onDelete={() => deleteToken(token.id)}
+                  isEditMode={editMode && !isPanning}
                 />
               )
             })}
