@@ -1,10 +1,8 @@
 "use client"
 
+import type { Character, Token as TokenType } from "@/lib/types"
 import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Trash2, X } from "lucide-react"
-import type { Token as TokenType, Character } from "@/lib/types"
+import { useEffect, useRef, useState } from "react"
 
 interface TokenProps {
   token: TokenType
@@ -90,9 +88,8 @@ export default function Token({ token, character, gridSize, isEditMode, onUpdate
   return (
     <div
       ref={tokenRef}
-      className={`absolute w-12 h-12 rounded-full border-4 ${getBorderColor()} bg-white shadow-lg cursor-pointer select-none z-40 flex items-center justify-center overflow-hidden ${
-        token.isDead ? "grayscale opacity-70" : ""
-      }`}
+      className={`absolute w-12 h-12 rounded-full border-4 ${getBorderColor()} bg-white shadow-lg cursor-pointer select-none z-40 flex items-center justify-center overflow-hidden ${token.isDead ? "grayscale-[0.7] opacity-50" : ""
+        }`}
       style={{
         left: token.x,
         top: token.y,
@@ -111,14 +108,7 @@ export default function Token({ token, character, gridSize, isEditMode, onUpdate
         <span className="text-lg font-bold text-gray-700">{character.name.charAt(0).toUpperCase()}</span>
       )}
 
-      {/* Dead overlay */}
-      {token.isDead && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
-          <X className="w-6 h-6 text-red-500" strokeWidth={3} />
-        </div>
-      )}
-
-      {isEditMode && !isDragging && (
+      {/* {isEditMode && !isDragging && (
         <div className="absolute -top-2 -right-2 flex gap-1">
           <Button
             size="sm"
@@ -132,7 +122,7 @@ export default function Token({ token, character, gridSize, isEditMode, onUpdate
             <Trash2 className="w-3 h-3" />
           </Button>
         </div>
-      )}
+      )} */}
     </div>
   )
 }
