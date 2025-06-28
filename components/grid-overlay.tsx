@@ -1,5 +1,7 @@
 "use client"
 
+import { useMemo } from "react"
+
 interface GridOverlayProps {
   gridSize: number
   color: string
@@ -7,16 +9,26 @@ interface GridOverlayProps {
 }
 
 export default function GridOverlay({ gridSize, color, opacity }: GridOverlayProps) {
+  const gridStyle = useMemo(() => {
+    return {
+      backgroundImage: `
+        linear-gradient(to right, ${color} 1px, transparent 1px),
+        linear-gradient(to bottom, ${color} 1px, transparent 1px)
+      `,
+      backgroundSize: `${gridSize}px ${gridSize}px`,
+      opacity,
+    }
+  }, [gridSize, color, opacity])
+
   return (
     <div
-      className="absolute inset-0 pointer-events-none z-10"
+      className="absolute pointer-events-none z-40"
       style={{
-        backgroundImage: `
-          linear-gradient(to right, ${color} 1px, transparent 1px),
-          linear-gradient(to bottom, ${color} 1px, transparent 1px)
-        `,
-        backgroundSize: `${gridSize}px ${gridSize}px`,
-        opacity,
+        ...gridStyle,
+        left: -10000,
+        top: -10000,
+        width: 20000,
+        height: 20000,
       }}
     />
   )

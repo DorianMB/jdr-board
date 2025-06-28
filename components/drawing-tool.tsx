@@ -14,7 +14,6 @@ interface DrawingToolProps {
   onDrawingsUpdate: (drawings: Drawing[]) => void
   drawings: Drawing[]
   gridSize: number
-  // Remove zoom and panOffset props
 }
 
 export default function DrawingTool({
@@ -31,23 +30,20 @@ export default function DrawingTool({
   const [isDrawing, setIsDrawing] = useState(false)
   const [currentPath, setCurrentPath] = useState<{ x: number; y: number }[]>([])
 
-  const getCanvasCoordinates = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const canvas = canvasRef.current
-      if (!canvas) return { x: 0, y: 0 }
+  const getCanvasCoordinates = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return { x: 0, y: 0 }
 
-      const rect = canvas.getBoundingClientRect()
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
 
-      // Simple canvas coordinates without manual zoom/pan handling
-      const x = (e.clientX - rect.left) * scaleX
-      const y = (e.clientY - rect.top) * scaleY
+    // Get coordinates relative to canvas
+    const x = (e.clientX - rect.left) * scaleX
+    const y = (e.clientY - rect.top) * scaleY
 
-      return { x, y }
-    },
-    [], // Remove zoom and panOffset dependencies
-  )
+    return { x, y }
+  }, [])
 
   const eraseAtPoint = useCallback(
     (point: { x: number; y: number }) => {
@@ -111,7 +107,7 @@ export default function DrawingTool({
       const newPath = [...currentPath, coords]
       setCurrentPath(newPath)
 
-      // Draw the line segment without manual zoom/pan adjustments
+      // Draw the line segment in real-time
       ctx.strokeStyle = color
       ctx.lineWidth = thickness
       ctx.lineCap = "round"
@@ -125,7 +121,7 @@ export default function DrawingTool({
         ctx.stroke()
       }
     },
-    [isActive, mode, isDrawing, currentPath, color, thickness, getCanvasCoordinates, eraseAtPoint], // Remove zoom, panOffset
+    [isActive, mode, isDrawing, currentPath, color, thickness, getCanvasCoordinates, eraseAtPoint],
   )
 
   const stopDrawing = useCallback(() => {
@@ -167,7 +163,7 @@ export default function DrawingTool({
 
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Draw without manual transformations since we're in a transformed container
+      // Draw all saved drawings
       drawings.forEach((drawing) => {
         if (drawing.points.length < 2) return
 
@@ -194,7 +190,7 @@ export default function DrawingTool({
     return () => {
       window.removeEventListener("resize", updateCanvasSize)
     }
-  }, [drawings]) // Remove zoom, panOffset dependencies
+  }, [drawings])
 
   return (
     <canvas

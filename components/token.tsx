@@ -1,128 +1,108 @@
 "use client"
 
-import type { Character, Token as TokenType } from "@/lib/types"
 import type React from "react"
-import { useEffect, useRef, useState } from "react"
+
+import { useState, useRef, useEffect } from "react"
+import { X } from "lucide-react"
+import type { Token, Character } from "@/lib/types"
 
 interface TokenProps {
-  token: TokenType
+  token: Token
   character: Character
   gridSize: number
-  isEditMode: boolean
-  onUpdate: (updates: Partial<TokenType>) => void
+  onUpdate: (updates: Partial<Token>) => void
   onDelete: () => void
+  isEditMode: boolean
 }
 
-export default function Token({ token, character, gridSize, isEditMode, onUpdate, onDelete }: TokenProps) {
+export default function TokenComponent({ token, character, gridSize, onUpdate, isEditMode }: TokenProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const tokenRef = useRef<HTMLDivElement>(null)
-  const dragRef = useRef<{ startX: number; startY: number; startTokenX: number; startTokenY: number }>()
-
-  const getBorderColor = () => {
-    switch (character.type) {
-      case "player":
-        return "border-green-500"
-      case "ally":
-        return "border-blue-500"
-      case "enemy":
-        return "border-red-500"
-      default:
-        return "border-gray-500"
-    }
-  }
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!isEditMode) return
 
     e.preventDefault()
     e.stopPropagation()
+
+    const rect = tokenRef.current?.getBoundingClientRect()
+    if (!rect) return
+
     setIsDragging(true)
-    dragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      startTokenX: token.x,
-      startTokenY: token.y,
-    }
-  }
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || !dragRef.current || !isEditMode) return
-
-    const deltaX = e.clientX - dragRef.current.startX
-    const deltaY = e.clientY - dragRef.current.startY
-
-    const newX = dragRef.current.startTokenX + deltaX
-    const newY = dragRef.current.startTokenY + deltaY
-
-    // Snap to grid center instead of corners
-    const gridX = Math.round(newX / gridSize)
-    const gridY = Math.round(newY / gridSize)
-    const snappedX = gridX * gridSize + gridSize / 2 // Center in grid cell
-    const snappedY = gridY * gridSize + gridSize / 2 // Center in grid cell
-
-    onUpdate({
-      x: snappedX,
-      y: snappedY,
-      gridX,
-      gridY,
+    setDragOffset({
+      x: e.clientX - rect.left - rect.width / 2,
+      y: e.clientY - rect.top - rect.height / 2,
     })
   }
 
-  const handleMouseUp = () => {
-    setIsDragging(false)
-    dragRef.current = undefined
-  }
-
-  // Add global mouse event listeners
   useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove)
-      document.addEventListener("mouseup", handleMouseUp)
-      return () => {
-        document.removeEventListener("mousemove", handleMouseMove)
-        document.removeEventListener("mouseup", handleMouseUp)
-      }
+    if (!isDragging) return
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newX = e.clientX - dragOffset.x
+      const newY = e.clientY - dragOffset.y
+
+      // Snap to grid
+      const gridX = Math.round(newX / gridSize)
+      const gridY = Math.round(newY / gridSize)
+      const snappedX = gridX * gridSize + gridSize / 2
+      const snappedY = gridY * gridSize + gridSize / 2
+
+      onUpdate({
+        x: snappedX,
+        y: snappedY,
+        gridX,
+        gridY,
+      })
     }
-  }, [isDragging])
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+    }
+
+    document.addEventListener("mousemove", handleMouseMove)
+    document.addEventListener("mouseup", handleMouseUp)
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove)
+      document.removeEventListener("mouseup", handleMouseUp)
+    }
+  }, [isDragging, dragOffset, gridSize, onUpdate])
 
   return (
     <div
       ref={tokenRef}
-      className={`absolute w-12 h-12 rounded-full border-4 ${getBorderColor()} bg-white shadow-lg cursor-pointer select-none z-40 flex items-center justify-center overflow-hidden ${token.isDead ? "grayscale-[0.7] opacity-50" : ""
-        }`}
+      className={`absolute w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold cursor-pointer select-none z-20 ${
+        character.type === "player"
+          ? "border-green-500 bg-green-100 text-green-700"
+          : character.type === "ally"
+            ? "border-blue-500 bg-blue-100 text-blue-700"
+            : "border-red-500 bg-red-100 text-red-700"
+      } ${token.isDead ? "grayscale opacity-50" : ""} ${isDragging ? "scale-110 shadow-lg" : ""}`}
       style={{
-        left: token.x,
-        top: token.y,
-        transform: "translate(-50%, -50%)",
+        left: token.x - 16,
+        top: token.y - 16,
+        cursor: isEditMode ? (isDragging ? "grabbing" : "grab") : "default",
       }}
       onMouseDown={handleMouseDown}
+      title={`${character.name} (${character.type})`}
     >
       {character.imageUrl ? (
         <img
           src={character.imageUrl || "/placeholder.svg"}
           alt={character.name}
-          className="w-full h-full object-cover rounded-full"
+          className="w-full h-full rounded-full object-cover"
           draggable={false}
         />
       ) : (
-        <span className="text-lg font-bold text-gray-700">{character.name.charAt(0).toUpperCase()}</span>
+        character.name.charAt(0).toUpperCase()
       )}
-
-      {/* {isEditMode && !isDragging && (
-        <div className="absolute -top-2 -right-2 flex gap-1">
-          <Button
-            size="sm"
-            variant="destructive"
-            className="w-6 h-6 p-0"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete()
-            }}
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
+      {token.isDead && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <X className="w-4 h-4 text-red-600" />
         </div>
-      )} */}
+      )}
     </div>
   )
 }
