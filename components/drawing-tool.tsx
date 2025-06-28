@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useRef, useEffect, useState, useCallback } from "react"
 import type { Drawing } from "@/lib/types"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 interface DrawingToolProps {
   isActive: boolean
@@ -69,7 +69,7 @@ export default function DrawingTool({
 
   const startDrawing = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!isActive) return
+      if (!isActive || e.button !== 0) return // ← ajouté e.button !== 0
 
       e.preventDefault()
       e.stopPropagation()
@@ -85,19 +85,21 @@ export default function DrawingTool({
     [isActive, mode, getCanvasCoordinates, eraseAtPoint],
   )
 
+
   const draw = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       if (!isActive) return
 
-      const coords = getCanvasCoordinates(e)
-
       if (mode === "eraser") {
+        if (!(e.buttons & 1)) return // ← ne gomme que si clic gauche maintenu
+        const coords = getCanvasCoordinates(e)
         eraseAtPoint(coords)
         return
       }
 
       if (!isDrawing) return
 
+      const coords = getCanvasCoordinates(e)
       const canvas = canvasRef.current
       if (!canvas) return
 
@@ -107,7 +109,6 @@ export default function DrawingTool({
       const newPath = [...currentPath, coords]
       setCurrentPath(newPath)
 
-      // Draw the line segment in real-time
       ctx.strokeStyle = color
       ctx.lineWidth = thickness
       ctx.lineCap = "round"
@@ -123,6 +124,7 @@ export default function DrawingTool({
     },
     [isActive, mode, isDrawing, currentPath, color, thickness, getCanvasCoordinates, eraseAtPoint],
   )
+
 
   const stopDrawing = useCallback(() => {
     if (!isDrawing || currentPath.length === 0 || mode === "eraser") {
