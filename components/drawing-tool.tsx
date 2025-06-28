@@ -200,7 +200,7 @@ export default function DrawingTool({
       className="absolute inset-0 z-30"
       style={{
         pointerEvents: isActive ? "auto" : "none",
-        cursor: isActive ? (mode === "eraser" ? "url('/icons8-eraser-30.png') 4 4, auto" : "crosshair") : "default",
+        cursor: isActive ? (mode === "eraser" ? "url('/icons8-eraser-30.png') 4 4, auto" : "url('/icons8-brush-24.png') 8 20, auto") : "default",
       }}
       onMouseDown={startDrawing}
       onMouseMove={draw}
