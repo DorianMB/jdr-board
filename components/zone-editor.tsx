@@ -835,7 +835,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
         <Button
           variant="outline"
           size="sm"
-          className="fixed left-4 top-20 z-50 bg-white"
+          className="fixed left-4 top-20 z-50 bg-white hover:text-white hover:bg-black"
           onClick={() => setShowCharacterMenu(true)}
         >
           Characters ({charactersOnBoard.length})
@@ -1146,18 +1146,18 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
       {/* Drawing Tools Trigger */}
       {showUI && (
         <Button
-          variant={drawingMode ? "default" : "outline"}
+          variant={drawingMode ? "outline" : "outline"}
           size="sm"
-          className="fixed right-4 top-20 z-50 bg-white"
+          className={`fixed right-4 top-20 z-50 [&_svg]:hover:stroke-white hover:bg-black ${!drawingMode ? "bg-white" : "bg-black"}`}
           onClick={() => setShowBrushMenu(true)}
         >
-          <Palette className="w-4 h-4" />
+          <Palette className="w-4 h-4" color={!drawingMode ? "black" : "white"}/>
         </Button>
       )}
 
       {/* Hidden UI Toggle */}
       {!showUI && (
-        <Button className="fixed top-4 right-4 z-50" onClick={() => setShowUI(true)}>
+        <Button className="fixed top-4 right-4 z-50 hover:text-white" onClick={() => setShowUI(true)}>
           Show UI
         </Button>
       )}
