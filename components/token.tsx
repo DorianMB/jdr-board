@@ -1,21 +1,23 @@
 "use client"
 
-import React from "react"
-
-import { useState, useRef } from "react"
-import type { Character, Token } from "@/lib/types"
-import { X } from "lucide-react"
+import type React from "react"
+import { useState, useRef, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Trash2, X } from "lucide-react"
+import type { Token as TokenType, Character } from "@/lib/types"
 
 interface TokenProps {
-  token: Token
+  token: TokenType
   character: Character
   gridSize: number
-  onUpdate: (updates: Partial<Token>) => void
-  editMode: boolean
+  isEditMode: boolean
+  onUpdate: (updates: Partial<TokenType>) => void
+  onDelete: () => void
 }
 
-export default function TokenComponent({ token, character, gridSize, onUpdate, editMode }: TokenProps) {
+export default function Token({ token, character, gridSize, isEditMode, onUpdate, onDelete }: TokenProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const tokenRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ startX: number; startY: number; startTokenX: number; startTokenY: number }>()
 
   const getBorderColor = () => {
@@ -32,9 +34,10 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, e
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (!editMode) return
+    if (!isEditMode) return
 
     e.preventDefault()
+    e.stopPropagation()
     setIsDragging(true)
     dragRef.current = {
       startX: e.clientX,
@@ -45,7 +48,7 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, e
   }
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || !dragRef.current || !editMode) return
+    if (!isDragging || !dragRef.current || !isEditMode) return
 
     const deltaX = e.clientX - dragRef.current.startX
     const deltaY = e.clientY - dragRef.current.startY
@@ -73,7 +76,7 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, e
   }
 
   // Add global mouse event listeners
-  React.useEffect(() => {
+  useEffect(() => {
     if (isDragging) {
       document.addEventListener("mousemove", handleMouseMove)
       document.addEventListener("mouseup", handleMouseUp)
@@ -86,6 +89,7 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, e
 
   return (
     <div
+      ref={tokenRef}
       className={`absolute w-12 h-12 rounded-full border-4 ${getBorderColor()} bg-white shadow-lg cursor-pointer select-none z-40 flex items-center justify-center overflow-hidden ${
         token.isDead ? "grayscale opacity-70" : ""
       }`}
@@ -111,6 +115,22 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, e
       {token.isDead && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
           <X className="w-6 h-6 text-red-500" strokeWidth={3} />
+        </div>
+      )}
+
+      {isEditMode && !isDragging && (
+        <div className="absolute -top-2 -right-2 flex gap-1">
+          <Button
+            size="sm"
+            variant="destructive"
+            className="w-6 h-6 p-0"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete()
+            }}
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
         </div>
       )}
     </div>

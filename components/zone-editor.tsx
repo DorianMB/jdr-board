@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import {
@@ -322,24 +322,14 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
       }
     }
 
-    const handleWheel = (e: WheelEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault()
-        const delta = e.deltaY > 0 ? -0.1 : 0.1
-        setZoom((prev) => Math.max(0.3, Math.min(3, prev + delta)))
-      }
-    }
-
     container.addEventListener("mousedown", handleMouseDown)
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
-    container.addEventListener("wheel", handleWheel)
 
     return () => {
       container.removeEventListener("mousedown", handleMouseDown)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
-      container.removeEventListener("wheel", handleWheel)
     }
   }, [isPanning, panOffset, zoom])
 
@@ -649,6 +639,121 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Settings Dialog */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Zone Settings</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div>
+              <Label>Grid Opacity</Label>
+              <Slider
+                value={[zone.gridOpacity]}
+                onValueChange={handleGridOpacityChange}
+                max={1}
+                min={0}
+                step={0.1}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label>Grid Color</Label>
+              <input
+                type="color"
+                value={zone.gridColor}
+                onChange={(e) => handleGridColorChange(e.target.value)}
+                className="mt-2 w-full h-10 rounded border"
+              />
+            </div>
+
+            <div>
+              <Label>Background Color</Label>
+              <input
+                type="color"
+                value={zone.backgroundColor}
+                onChange={(e) => handleBackgroundColorChange(e.target.value)}
+                className="mt-2 w-full h-10 rounded border"
+              />
+            </div>
+
+            <div>
+              <Label>Background Image URL</Label>
+              <Input
+                type="url"
+                placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                value={backgroundImageUrl}
+                onChange={(e) => {
+                  setBackgroundImageUrl(e.target.value)
+                  handleBackgroundImageUrlChange(e.target.value)
+                }}
+                className="mt-2 w-full"
+              />
+            </div>
+
+            {zone.backgroundImage && (
+              <div>
+                <Label>Image Rotation</Label>
+                <div className="flex items-center gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => rotateBackgroundImage(-90)}
+                    title="Rotate 90° counter-clockwise"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm min-w-[60px] text-center">{zone.backgroundImage.rotation}°</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => rotateBackgroundImage(90)}
+                    title="Rotate 90° clockwise"
+                  >
+                    <RotateIcon className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Token Dialog */}
+      <Dialog open={showAddToken} onOpenChange={setShowAddToken}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Token</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Character</Label>
+              <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select character" />
+                </SelectTrigger>
+                <SelectContent>
+                  {characters.map((char) => (
+                    <SelectItem key={char.id} value={char.id}>
+                      {char.name} ({char.type})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowAddToken(false)}>
+                Cancel
+              </Button>
+              <Button onClick={addToken} disabled={!selectedCharacter}>
+                Add Token
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Left Character Sidebar */}
       {showUI && (
         <Sheet open={showCharacterMenu} onOpenChange={setShowCharacterMenu}>
@@ -798,127 +903,14 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
 
               <div className="w-px h-6 bg-gray-300 mx-2" />
 
-              <Dialog open={showAddToken} onOpenChange={setShowAddToken}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Plus className="w-4 h-4 mr-1" />
-                    Token
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add Token</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Character</Label>
-                      <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select character" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {characters.map((char) => (
-                            <SelectItem key={char.id} value={char.id}>
-                              {char.name} ({char.type})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => setShowAddToken(false)}>
-                        Cancel
-                      </Button>
-                      <Button onClick={addToken}>Add Token</Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button variant="outline" size="sm" onClick={() => setShowAddToken(true)}>
+                <Plus className="w-4 h-4 mr-1" />
+                Token
+              </Button>
 
-              <Dialog open={showSettings} onOpenChange={setShowSettings}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Zone Settings</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-6">
-                    <div>
-                      <Label>Grid Opacity</Label>
-                      <Slider
-                        value={[zone.gridOpacity]}
-                        onValueChange={handleGridOpacityChange}
-                        max={1}
-                        min={0}
-                        step={0.1}
-                        className="mt-2"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Grid Color</Label>
-                      <input
-                        type="color"
-                        value={zone.gridColor}
-                        onChange={(e) => handleGridColorChange(e.target.value)}
-                        className="mt-2 w-full h-10 rounded border"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Background Color</Label>
-                      <input
-                        type="color"
-                        value={zone.backgroundColor}
-                        onChange={(e) => handleBackgroundColorChange(e.target.value)}
-                        className="mt-2 w-full h-10 rounded border"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Background Image URL</Label>
-                      <Input
-                        type="url"
-                        placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
-                        value={backgroundImageUrl}
-                        onChange={(e) => {
-                          setBackgroundImageUrl(e.target.value)
-                          handleBackgroundImageUrlChange(e.target.value)
-                        }}
-                        className="mt-2 w-full"
-                      />
-                    </div>
-
-                    {zone.backgroundImage && (
-                      <div>
-                        <Label>Image Rotation</Label>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => rotateBackgroundImage(-90)}
-                            title="Rotate 90° counter-clockwise"
-                          >
-                            <RotateCcw className="w-4 h-4" />
-                          </Button>
-                          <span className="text-sm min-w-[60px] text-center">{zone.backgroundImage.rotation}°</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => rotateBackgroundImage(90)}
-                            title="Rotate 90° clockwise"
-                          >
-                            <RotateIcon className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
+                <Settings className="w-4 h-4" />
+              </Button>
 
               <Button variant="outline" size="sm" onClick={() => setShowUI(false)}>
                 <EyeOff className="w-4 h-4" />
@@ -1065,7 +1057,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
           {/* Pan instruction */}
           {zoom > 1 && showUI && (
             <div className="absolute bottom-4 left-4 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
-              Middle-click and drag to pan • Ctrl+Scroll to zoom
+              Middle-click and drag to pan • Use +/- buttons to zoom
             </div>
           )}
         </div>

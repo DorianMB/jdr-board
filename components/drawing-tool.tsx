@@ -40,14 +40,12 @@ export default function DrawingTool({
       if (!canvas) return { x: 0, y: 0 }
 
       const rect = canvas.getBoundingClientRect()
+      const scaleX = canvas.width / rect.width
+      const scaleY = canvas.height / rect.height
 
-      // Get the raw mouse coordinates relative to the canvas
-      const rawX = e.clientX - rect.left
-      const rawY = e.clientY - rect.top
-
-      // Convert to world coordinates by accounting for zoom and pan
-      const x = (rawX - panOffset.x) / zoom
-      const y = (rawY - panOffset.y) / zoom
+      // Account for zoom and pan offset
+      const x = ((e.clientX - rect.left) * scaleX - panOffset.x) / zoom
+      const y = ((e.clientY - rect.top) * scaleY - panOffset.y) / zoom
 
       return { x, y }
     },
@@ -107,9 +105,36 @@ export default function DrawingTool({
 
       if (!isDrawing) return
 
-      setCurrentPath((prev) => [...prev, coords])
+      const canvas = canvasRef.current
+      if (!canvas) return
+
+      const ctx = canvas.getContext("2d")
+      if (!ctx) return
+
+      const newPath = [...currentPath, coords]
+      setCurrentPath(newPath)
+
+      // Draw the line segment with zoom and pan adjustments
+      ctx.save()
+      ctx.scale(zoom, zoom)
+      ctx.translate(panOffset.x / zoom, panOffset.y / zoom)
+
+      ctx.strokeStyle = color
+      ctx.lineWidth = thickness
+      ctx.lineCap = "round"
+      ctx.lineJoin = "round"
+
+      if (currentPath.length > 0) {
+        const lastPoint = currentPath[currentPath.length - 1]
+        ctx.beginPath()
+        ctx.moveTo(lastPoint.x, lastPoint.y)
+        ctx.lineTo(coords.x, coords.y)
+        ctx.stroke()
+      }
+
+      ctx.restore()
     },
-    [isActive, mode, isDrawing, getCanvasCoordinates, eraseAtPoint],
+    [isActive, mode, isDrawing, currentPath, color, thickness, getCanvasCoordinates, eraseAtPoint, zoom, panOffset],
   )
 
   const stopDrawing = useCallback(() => {
@@ -156,7 +181,6 @@ export default function DrawingTool({
       ctx.scale(zoom, zoom)
       ctx.translate(panOffset.x / zoom, panOffset.y / zoom)
 
-      // Draw all existing drawings
       drawings.forEach((drawing) => {
         if (drawing.points.length < 2) return
 
@@ -176,24 +200,6 @@ export default function DrawingTool({
         ctx.stroke()
       })
 
-      // Draw current path if drawing
-      if (isDrawing && currentPath.length > 0) {
-        ctx.strokeStyle = color
-        ctx.lineWidth = thickness
-        ctx.lineCap = "round"
-        ctx.lineJoin = "round"
-
-        ctx.beginPath()
-        currentPath.forEach((point, index) => {
-          if (index === 0) {
-            ctx.moveTo(point.x, point.y)
-          } else {
-            ctx.lineTo(point.x, point.y)
-          }
-        })
-        ctx.stroke()
-      }
-
       ctx.restore()
     }
 
@@ -203,7 +209,7 @@ export default function DrawingTool({
     return () => {
       window.removeEventListener("resize", updateCanvasSize)
     }
-  }, [drawings, zoom, panOffset, isDrawing, currentPath, color, thickness])
+  }, [drawings, zoom, panOffset])
 
   return (
     <canvas
