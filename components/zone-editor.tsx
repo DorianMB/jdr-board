@@ -438,19 +438,19 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
     saveToHistory()
   }
 
-  const deleteTokenByCharacter = (characterId: string) => {
+  const deleteTokenByCharacter = (tokenId: string) => {
     setZone((prev) => ({
       ...prev,
-      tokens: (prev.tokens || []).filter((token) => token.characterId !== characterId),
+      tokens: (prev.tokens || []).filter((token) => token.id !== tokenId),
     }))
     saveToHistory()
   }
 
-  const toggleTokenDead = (characterId: string) => {
+  const toggleTokenDead = (tokenId: string) => {
     setZone((prev) => ({
       ...prev,
       tokens: (prev.tokens || []).map((token) =>
-        token.characterId === characterId ? { ...token, isDead: !token.isDead } : token,
+        token.id === tokenId ? { ...token, isDead: !token.isDead } : token
       ),
     }))
     saveToHistory()
@@ -764,9 +764,9 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
             <div className="mt-6 space-y-3">
               {charactersOnBoard.map(({ token, character }) => {
                 const tokensCount = charactersOnBoard.length
-                const isDead = (zone.tokens || []).find((t) => t.characterId === character.id)?.isDead || false
+                const isDead = token.isDead || false
                 return (
-                  <div key={character.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={token.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-3 flex-1">
                       <div
                         className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${character.type === "player"
@@ -795,13 +795,13 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                           {isDead && " • DEAD"}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <Label htmlFor={`dead-${character.id}`} className="text-xs">
+                          <Label htmlFor={`dead-${token.id}`} className="text-xs">
                             Dead
                           </Label>
                           <Switch
-                            id={`dead-${character.id}`}
+                            id={`dead-${token.id}`}
                             checked={isDead}
-                            onCheckedChange={() => toggleTokenDead(character.id)}
+                            onCheckedChange={() => toggleTokenDead(token.id)}
                           />
                         </div>
                       </div>
@@ -809,7 +809,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => deleteTokenByCharacter(character.id)}
+                      onClick={() => deleteTokenByCharacter(token.id)}
                       className="h-8 w-8 p-0 ml-2"
                     >
                       <Trash2 className="w-4 h-4" />
