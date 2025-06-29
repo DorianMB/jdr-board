@@ -2,15 +2,6 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,32 +12,40 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import { loadAppData, saveAppData } from "@/lib/storage"
+import type { Character, Drawing, HistoryState, Token, Zone } from "@/lib/types"
 import {
-  Home,
-  Settings,
+  Brush,
+  Check,
+  CheckCircle,
+  Edit,
+  Eraser,
   EyeOff,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  RotateCw,
+  Home,
   Palette,
   Plus,
-  X,
-  Eraser,
-  Brush,
-  Trash2,
-  Edit,
-  Check,
+  RotateCcw,
+  RotateCw,
   Save,
-  CheckCircle,
-  Rotate3dIcon as RotateIcon,
+  Settings,
+  Trash2,
+  X,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import type { Zone, Character, Token, Drawing, HistoryState } from "@/lib/types"
-import { loadAppData, saveAppData } from "@/lib/storage"
+import { useCallback, useEffect, useRef, useState } from "react"
+import DrawingTool from "./drawing-tool"
 import GridOverlay from "./grid-overlay"
 import TokenComponent from "./token"
-import DrawingTool from "./drawing-tool"
 
 interface ZoneEditorProps {
   zone: Zone
@@ -64,9 +63,9 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
     backgroundColor: initialZone?.backgroundColor || "#ffffff",
     backgroundImage: initialZone?.backgroundImage
       ? {
-          ...initialZone.backgroundImage,
-          rotation: initialZone.backgroundImage.rotation || 0,
-        }
+        ...initialZone.backgroundImage,
+        rotation: initialZone.backgroundImage.rotation || 0,
+      }
       : null,
     tokens: initialZone?.tokens || [],
     drawings: initialZone?.drawings || [],
@@ -385,9 +384,9 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
       ...prev,
       backgroundImage: prev.backgroundImage
         ? {
-            ...prev.backgroundImage,
-            rotation: (prev.backgroundImage.rotation + degrees) % 360,
-          }
+          ...prev.backgroundImage,
+          rotation: (prev.backgroundImage.rotation + degrees) % 360,
+        }
         : null,
     }))
   }
@@ -563,10 +562,10 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
           ...prev,
           backgroundImage: prev.backgroundImage
             ? {
-                ...prev.backgroundImage,
-                x: backgroundImageDrag.startImageX + deltaX,
-                y: backgroundImageDrag.startImageY + deltaY,
-              }
+              ...prev.backgroundImage,
+              x: backgroundImageDrag.startImageX + deltaX,
+              y: backgroundImageDrag.startImageY + deltaY,
+            }
             : null,
         }))
       } else if (backgroundImageDrag.isResizing) {
@@ -574,10 +573,10 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
           ...prev,
           backgroundImage: prev.backgroundImage
             ? {
-                ...prev.backgroundImage,
-                width: Math.max(100, backgroundImageDrag.startImageWidth + deltaX),
-                height: Math.max(100, backgroundImageDrag.startImageHeight + deltaY),
-              }
+              ...prev.backgroundImage,
+              width: Math.max(100, backgroundImageDrag.startImageWidth + deltaX),
+              height: Math.max(100, backgroundImageDrag.startImageHeight + deltaY),
+            }
             : null,
         }))
       }
@@ -711,7 +710,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                     onClick={() => rotateBackgroundImage(90)}
                     title="Rotate 90° clockwise"
                   >
-                    <RotateIcon className="w-4 h-4" />
+                    <RotateCw className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
@@ -769,13 +768,12 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                   <div key={character.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-3 flex-1">
                       <div
-                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
-                          character.type === "player"
-                            ? "border-green-500 bg-green-100 text-green-700"
-                            : character.type === "ally"
-                              ? "border-blue-500 bg-blue-100 text-blue-700"
-                              : "border-red-500 bg-red-100 text-red-700"
-                        } ${isDead ? "grayscale opacity-50" : ""}`}
+                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${character.type === "player"
+                          ? "border-green-500 bg-green-100 text-green-700"
+                          : character.type === "ally"
+                            ? "border-blue-500 bg-blue-100 text-blue-700"
+                            : "border-red-500 bg-red-100 text-red-700"
+                          } ${isDead ? "grayscale opacity-50" : ""}`}
                       >
                         {character.imageUrl ? (
                           <img
@@ -864,21 +862,6 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
               <span className="text-sm min-w-[60px] text-center">{Math.round(zoom * 100)}%</span>
               <Button variant="outline" size="sm" onClick={handleZoomIn}>
                 <ZoomIn className="w-4 h-4" />
-              </Button>
-
-              <div className="w-px h-6 bg-gray-300 mx-2" />
-
-              <Button variant="outline" size="sm" onClick={undo} disabled={historyIndex <= 0} title="Undo (Ctrl+Z)">
-                <RotateCcw className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={redo}
-                disabled={historyIndex >= history.length - 1}
-                title="Redo (Ctrl+Y)"
-              >
-                <RotateCw className="w-4 h-4" />
               </Button>
 
               <div className="w-px h-6 bg-gray-300 mx-2" />
@@ -982,7 +965,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                         onClick={() => rotateBackgroundImage(90)}
                         title="Rotate 90° clockwise"
                       >
-                        <RotateIcon className="w-3 h-3" />
+                        <RotateCw className="w-3 h-3" />
                       </Button>
                       <Button
                         size="sm"
@@ -1151,7 +1134,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
           className={`fixed right-4 top-20 z-50 [&_svg]:hover:stroke-white hover:bg-black ${!drawingMode ? "bg-white" : "bg-black"}`}
           onClick={() => setShowBrushMenu(true)}
         >
-          <Palette className="w-4 h-4" color={!drawingMode ? "black" : "white"}/>
+          <Palette className="w-4 h-4" color={!drawingMode ? "black" : "white"} />
         </Button>
       )}
 

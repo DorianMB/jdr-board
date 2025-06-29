@@ -2,8 +2,6 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -11,9 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Users, Map, Settings, Download, Upload, Trash2, Edit } from "lucide-react"
-import { loadAppData, saveAppData, exportData, importData } from "@/lib/storage"
-import type { Zone, Character, AppData } from "@/lib/types"
+import { exportData, importData, loadAppData, saveAppData } from "@/lib/storage"
+import type { AppData, Character, Zone } from "@/lib/types"
+import { Download, Edit, Map, Plus, Trash2, Upload, Users } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function HomePage() {
   const router = useRouter()
@@ -145,7 +145,7 @@ export default function HomePage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Virtual Tabletop</h1>
+            <h1 className="text-3xl font-bold text-gray-900">JDR Board</h1>
             <p className="text-gray-600 mt-2">Manage your RPG zones and characters</p>
           </div>
           <div className="flex items-center gap-2">
@@ -159,39 +159,6 @@ export default function HomePage() {
             </Button>
             <input id="import-file" type="file" accept=".json" onChange={handleImport} className="hidden" />
           </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Zones</CardTitle>
-              <Map className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data.zones.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Characters</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{data.characters.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Tokens</CardTitle>
-              <Settings className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {data.zones.reduce((total, zone) => total + zone.tokens.length, 0)}
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Main Content */}
@@ -297,13 +264,12 @@ export default function HomePage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-white font-bold ${
-                              character.type === "player"
-                                ? "border-green-500 bg-green-600"
-                                : character.type === "ally"
-                                  ? "border-blue-500 bg-blue-600"
-                                  : "border-red-500 bg-red-600"
-                            }`}
+                            className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-white font-bold ${character.type === "player"
+                              ? "border-green-500 bg-green-600"
+                              : character.type === "ally"
+                                ? "border-blue-500 bg-blue-600"
+                                : "border-red-500 bg-red-600"
+                              }`}
                           >
                             {character.imageUrl ? (
                               <img
