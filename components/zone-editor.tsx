@@ -500,7 +500,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
   const charactersOnBoard = (zone.tokens || []).map((token) => {
     const character = characters.find((c) => c.id === token.characterId)
     return character ? { token, character } : null
-  }).filter(Boolean)
+  }).filter((item): item is { token: Token; character: Character } => item !== null)
 
   const [backgroundImageDrag, setBackgroundImageDrag] = useState<{
     isDragging: boolean
