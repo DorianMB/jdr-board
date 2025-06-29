@@ -278,7 +278,7 @@ export default function HomePage() {
                                 className="w-full h-full rounded-full object-cover"
                               />
                             ) : (
-                              character.name.charAt(0).toUpperCase()
+                              character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
                             )}
                           </div>
                           <div>

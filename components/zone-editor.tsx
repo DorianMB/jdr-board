@@ -783,7 +783,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                             className="w-full h-full rounded-full object-cover"
                           />
                         ) : (
-                          character.name.charAt(0).toUpperCase()
+                          character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
                         )}
                       </div>
                       <div className="flex-1">

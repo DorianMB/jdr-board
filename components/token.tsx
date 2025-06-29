@@ -94,7 +94,7 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
           draggable={false}
         />
       ) : (
-        character.name.charAt(0).toUpperCase()
+        character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
       )}
     </div>
   )
