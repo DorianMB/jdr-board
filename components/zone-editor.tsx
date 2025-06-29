@@ -497,9 +497,10 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
   }
 
   // Get characters that are currently on the board
-  const charactersOnBoard = characters.filter((character) =>
-    (zone.tokens || []).some((token) => token.characterId === character.id),
-  )
+  const charactersOnBoard = (zone.tokens || []).map((token) => {
+    const character = characters.find((c) => c.id === token.characterId)
+    return character ? { token, character } : null
+  }).filter(Boolean)
 
   const [backgroundImageDrag, setBackgroundImageDrag] = useState<{
     isDragging: boolean
@@ -761,8 +762,8 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
               <SheetTitle>Characters on Board</SheetTitle>
             </SheetHeader>
             <div className="mt-6 space-y-3">
-              {charactersOnBoard.map((character) => {
-                const tokensCount = (zone.tokens || []).filter((t) => t.characterId === character.id).length
+              {charactersOnBoard.map(({ token, character }) => {
+                const tokensCount = charactersOnBoard.length
                 const isDead = (zone.tokens || []).find((t) => t.characterId === character.id)?.isDead || false
                 return (
                   <div key={character.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
