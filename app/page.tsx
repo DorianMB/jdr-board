@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Users, Map, Settings, Download, Upload, Trash2 } from "lucide-react"
+import { Plus, Users, Map, Settings, Download, Upload, Trash2, Edit } from "lucide-react"
 import { loadAppData, saveAppData, exportData, importData } from "@/lib/storage"
 import type { Zone, Character, AppData } from "@/lib/types"
 
@@ -20,6 +20,8 @@ export default function HomePage() {
   const [data, setData] = useState<AppData>({ zones: [], characters: [] })
   const [showNewZoneDialog, setShowNewZoneDialog] = useState(false)
   const [showNewCharacterDialog, setShowNewCharacterDialog] = useState(false)
+  const [showEditCharacterDialog, setShowEditCharacterDialog] = useState(false)
+  const [editingCharacter, setEditingCharacter] = useState<Character | null>(null)
   const [newZoneName, setNewZoneName] = useState("")
   const [newCharacterName, setNewCharacterName] = useState("")
   const [newCharacterType, setNewCharacterType] = useState<"player" | "ally" | "enemy">("player")
@@ -75,6 +77,39 @@ export default function HomePage() {
     setNewCharacterName("")
     setNewCharacterImageUrl("")
     setShowNewCharacterDialog(false)
+  }
+
+  const openEditCharacterDialog = (character: Character) => {
+    setEditingCharacter(character)
+    setNewCharacterName(character.name)
+    setNewCharacterType(character.type)
+    setNewCharacterImageUrl(character.imageUrl)
+    setShowEditCharacterDialog(true)
+  }
+
+  const updateCharacter = () => {
+    if (!editingCharacter || !newCharacterName.trim()) return
+
+    const updatedCharacter: Character = {
+      ...editingCharacter,
+      name: newCharacterName.trim(),
+      type: newCharacterType,
+      imageUrl: newCharacterImageUrl.trim(),
+    }
+
+    const updatedData = {
+      ...data,
+      characters: data.characters.map((character) =>
+        character.id === editingCharacter.id ? updatedCharacter : character,
+      ),
+    }
+
+    setData(updatedData)
+    saveAppData(updatedData)
+    setNewCharacterName("")
+    setNewCharacterImageUrl("")
+    setEditingCharacter(null)
+    setShowEditCharacterDialog(false)
   }
 
   const deleteZone = (zoneId: string) => {
@@ -285,9 +320,14 @@ export default function HomePage() {
                             <CardDescription className="capitalize">{character.type}</CardDescription>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => deleteCharacter(character.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => openEditCharacterDialog(character)}>
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => deleteCharacter(character.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                   </Card>
@@ -374,6 +414,59 @@ export default function HomePage() {
               </Button>
               <Button onClick={createCharacter} disabled={!newCharacterName.trim()}>
                 Create Character
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Character Dialog */}
+      <Dialog open={showEditCharacterDialog} onOpenChange={setShowEditCharacterDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Character</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-character-name">Character Name</Label>
+              <Input
+                id="edit-character-name"
+                value={newCharacterName}
+                onChange={(e) => setNewCharacterName(e.target.value)}
+                placeholder="Enter character name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-character-type">Character Type</Label>
+              <Select
+                value={newCharacterType}
+                onValueChange={(value: "player" | "ally" | "enemy") => setNewCharacterType(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="player">Player</SelectItem>
+                  <SelectItem value="ally">Ally</SelectItem>
+                  <SelectItem value="enemy">Enemy</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="edit-character-image">Image URL (optional)</Label>
+              <Input
+                id="edit-character-image"
+                value={newCharacterImageUrl}
+                onChange={(e) => setNewCharacterImageUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowEditCharacterDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={updateCharacter} disabled={!newCharacterName.trim()}>
+                Update Character
               </Button>
             </div>
           </div>
