@@ -41,6 +41,7 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
+import CreateCharacterForm from "./create-character-form"
 import DrawingTool from "./drawing-tool"
 import GridOverlay from "./grid-overlay"
 import TokenComponent from "./token"
@@ -81,6 +82,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
   const [selectedCharacter, setSelectedCharacter] = useState<string>("")
   const [characterSearchTerm, setCharacterSearchTerm] = useState("")
   const [characterTypeFilter, setCharacterTypeFilter] = useState<"all" | "player" | "ally" | "enemy">("all")
+  const [showCreateCharacter, setShowCreateCharacter] = useState(false)
   const [drawingMode, setDrawingMode] = useState<"brush" | "eraser" | null>(null)
   const [drawColor, setDrawColor] = useState("#ff0000")
   const [drawThickness, setDrawThickness] = useState(3)
@@ -423,6 +425,23 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
     setShowAddToken(false)
   }
 
+  const createCharacter = (newCharacter: Character) => {
+    try {
+      const data = loadAppData()
+      const updatedCharacters = [...(data.characters || []), newCharacter]
+      setCharacters(updatedCharacters)
+      saveAppData({ zones: data.zones, characters: updatedCharacters })
+
+      // Auto-select the newly created character
+      setSelectedCharacter(newCharacter.id)
+      setShowCreateCharacter(false)
+
+      console.log("Character created:", newCharacter.name)
+    } catch (error) {
+      console.error("Error creating character:", error)
+    }
+  }
+
   const updateToken = (tokenId: string, updates: Partial<Token>) => {
     setZone((prev) => ({
       ...prev,
@@ -713,112 +732,154 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
       </Dialog>
 
       {/* Add Token Dialog */}
-      <Dialog open={showAddToken} onOpenChange={setShowAddToken}>
+      <Dialog open={showAddToken} onOpenChange={(open) => {
+        setShowAddToken(open)
+        if (!open) {
+          setShowCreateCharacter(false)
+          setCharacterSearchTerm("")
+          setCharacterTypeFilter("all")
+          setSelectedCharacter("")
+        }
+      }}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>Add Token</DialogTitle>
+            <DialogTitle>{showCreateCharacter ? "Create New Character" : "Add Token"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 overflow-y-auto max-h-[60vh]">
-            {/* Search and Filter Controls */}
-            <div className="space-y-3 border-b pb-4">
-              <div>
-                <Label htmlFor="character-search">Search Characters</Label>
-                <Input
-                  id="character-search"
-                  value={characterSearchTerm}
-                  onChange={(e) => setCharacterSearchTerm(e.target.value)}
-                  placeholder="Search by character name..."
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label>Filter by Type</Label>
-                <Select value={characterTypeFilter} onValueChange={(value: "all" | "player" | "ally" | "enemy") => setCharacterTypeFilter(value)}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="player">Player</SelectItem>
-                    <SelectItem value="ally">Ally</SelectItem>
-                    <SelectItem value="enemy">Enemy</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
 
-            {/* Character Selection */}
-            <div>
-              <Label>Select Character ({filteredCharacters.length} found)</Label>
-              {filteredCharacters.length === 0 ? (
-                <div className="text-center text-gray-500 py-8">
-                  No characters found matching your criteria.
-                  {characterSearchTerm && (
-                    <div className="mt-2">
+          {showCreateCharacter ? (
+            <CreateCharacterForm
+              onCharacterCreated={createCharacter}
+              onCancel={() => setShowCreateCharacter(false)}
+            />
+          ) : (
+            <div className="space-y-4 overflow-y-auto max-h-[60vh]">
+              {/* Search and Filter Controls */}
+              <div className="space-y-3 border-b pb-4">
+                <div>
+                  <Label htmlFor="character-search">Search Characters</Label>
+                  <Input
+                    id="character-search"
+                    value={characterSearchTerm}
+                    onChange={(e) => setCharacterSearchTerm(e.target.value)}
+                    placeholder="Search by character name..."
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>Filter by Type</Label>
+                  <Select value={characterTypeFilter} onValueChange={(value: "all" | "player" | "ally" | "enemy") => setCharacterTypeFilter(value)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="player">Player</SelectItem>
+                      <SelectItem value="ally">Ally</SelectItem>
+                      <SelectItem value="enemy">Enemy</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Character Selection */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Select Character ({filteredCharacters.length} found)</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCreateCharacter(true)}
+                    className="flex items-center gap-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Create New
+                  </Button>
+                </div>
+                {filteredCharacters.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    No characters found matching your criteria.
+                    {characterSearchTerm && (
+                      <div className="mt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCharacterSearchTerm("")}
+                        >
+                          Clear Search
+                        </Button>
+                      </div>
+                    )}
+                    <div className="mt-4">
                       <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
-                        onClick={() => setCharacterSearchTerm("")}
+                        onClick={() => setShowCreateCharacter(true)}
+                        className="flex items-center gap-1"
                       >
-                        Clear Search
+                        <Plus className="w-4 h-4" />
+                        Create Your First Character
                       </Button>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 max-h-64 overflow-y-auto">
-                  {filteredCharacters.map((character) => (
-                    <div
-                      key={character.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all hover:bg-gray-50 ${selectedCharacter === character.id
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 max-h-64 overflow-y-auto">
+                    {filteredCharacters.map((character) => (
+                      <div
+                        key={character.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all hover:bg-gray-50 ${selectedCharacter === character.id
                           ? "border-blue-500 bg-blue-50"
                           : "border-gray-200"
-                        }`}
-                      onClick={() => setSelectedCharacter(character.id)}
-                    >
-                      <div
-                        className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-white font-bold text-sm ${character.type === "player"
+                          }`}
+                        onClick={() => setSelectedCharacter(character.id)}
+                      >
+                        <div
+                          className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-white font-bold text-sm ${character.type === "player"
                             ? "border-green-500 bg-green-600"
                             : character.type === "ally"
                               ? "border-blue-500 bg-blue-600"
                               : "border-red-500 bg-red-600"
-                          }`}
-                      >
-                        {character.imageUrl ? (
-                          <img
-                            src={character.imageUrl || "/placeholder.svg"}
-                            alt={character.name}
-                            className="w-full h-full rounded-full object-cover"
-                          />
-                        ) : (
-                          /^[a-zA-Z]/.test(character.name)
-                            ? character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
-                            : character.name.replace(/\D/g, "")
-                        )}
+                            }`}
+                        >
+                          {character.imageUrl ? (
+                            <img
+                              src={character.imageUrl || "/placeholder.svg"}
+                              alt={character.name}
+                              className="w-full h-full rounded-full object-cover"
+                            />
+                          ) : (
+                            /^[a-zA-Z]/.test(character.name)
+                              ? character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
+                              : character.name.replace(/\D/g, "")
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{character.name}</div>
+                          <div className="text-xs text-gray-500 capitalize">{character.type}</div>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">{character.name}</div>
-                        <div className="text-xs text-gray-500 capitalize">{character.type}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => {
-              setShowAddToken(false)
-              setCharacterSearchTerm("")
-              setCharacterTypeFilter("all")
-              setSelectedCharacter("")
-            }}>
-              Cancel
-            </Button>
-            <Button onClick={addToken} disabled={!selectedCharacter}>
-              Add Token
-            </Button>
-          </div>
+          )}
+
+          {!showCreateCharacter && (
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => {
+                setShowAddToken(false)
+                setCharacterSearchTerm("")
+                setCharacterTypeFilter("all")
+                setSelectedCharacter("")
+                setShowCreateCharacter(false)
+              }}>
+                Cancel
+              </Button>
+              <Button onClick={addToken} disabled={!selectedCharacter}>
+                Add Token
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
