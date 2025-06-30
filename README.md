@@ -427,7 +427,6 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 - **Issues** : [GitHub Issues](https://github.com/DorianMB/jdr-board/issues)
 - **Discussions** : [GitHub Discussions](https://github.com/DorianMB/jdr-board/discussions)
-- **Email** : votre-email@example.com
 
 ---
 
