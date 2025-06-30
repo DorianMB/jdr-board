@@ -95,6 +95,8 @@ export default function HomePage() {
   const [showEditCharacterDialog, setShowEditCharacterDialog] = useState(false)
   const [showGenerateEnemiesDialog, setShowGenerateEnemiesDialog] = useState(false)
   const [selectedEnemies, setSelectedEnemies] = useState<Set<number>>(new Set())
+  const [showDeleteCharactersDialog, setShowDeleteCharactersDialog] = useState(false)
+  const [selectedCharactersToDelete, setSelectedCharactersToDelete] = useState<Set<string>>(new Set())
   const [duplicateWarning, setDuplicateWarning] = useState<string>("")
   const [editingCharacter, setEditingCharacter] = useState<Character | null>(null)
   const [newZoneName, setNewZoneName] = useState("")
@@ -337,6 +339,35 @@ export default function HomePage() {
     setSelectedEnemies(new Set())
   }
 
+  const toggleCharacterSelection = (characterId: string) => {
+    const newSelected = new Set(selectedCharactersToDelete)
+    if (newSelected.has(characterId)) {
+      newSelected.delete(characterId)
+    } else {
+      newSelected.add(characterId)
+    }
+    setSelectedCharactersToDelete(newSelected)
+  }
+
+  const selectAllCharacters = () => {
+    setSelectedCharactersToDelete(new Set(data.characters.map(c => c.id)))
+  }
+
+  const deselectAllCharacters = () => {
+    setSelectedCharactersToDelete(new Set())
+  }
+
+  const deleteSelectedCharacters = () => {
+    const updatedData = {
+      ...data,
+      characters: data.characters.filter((character) => !selectedCharactersToDelete.has(character.id)),
+    }
+    setData(updatedData)
+    saveAppData(updatedData)
+    setShowDeleteCharactersDialog(false)
+    setSelectedCharactersToDelete(new Set()) // Réinitialiser la sélection
+  }
+
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
@@ -454,6 +485,19 @@ export default function HomePage() {
                   <Zap className="w-4 h-4 mr-2" />
                   Generate D&D Enemies
                 </Button>
+                {data.characters.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedCharactersToDelete(new Set())
+                      setShowDeleteCharactersDialog(true)
+                    }}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Multiple
+                  </Button>
+                )}
                 <Button onClick={() => {
                   setNewCharacterName("")
                   setNewCharacterImageUrl("")
@@ -898,6 +942,120 @@ export default function HomePage() {
               >
                 <Zap className="w-4 h-4 mr-2" />
                 Generate {selectedEnemies.size} Enemies
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Characters Confirmation Dialog */}
+      <Dialog open={showDeleteCharactersDialog} onOpenChange={setShowDeleteCharactersDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Delete Characters</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-gray-600">
+                Select the characters you want to delete ({selectedCharactersToDelete.size} selected):
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={selectAllCharacters}>
+                  Select All
+                </Button>
+                <Button variant="outline" size="sm" onClick={deselectAllCharacters}>
+                  Deselect All
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* Grouper les personnages par type */}
+              {(["player", "ally", "enemy"] as const).map(type => {
+                const charactersOfType = data.characters.filter(char => char.type === type)
+                if (charactersOfType.length === 0) return null
+
+                const typeLabels = {
+                  player: "Joueurs",
+                  ally: "Alliés",
+                  enemy: "Ennemis"
+                }
+
+                const typeColors = {
+                  player: "text-green-700 border-green-200",
+                  ally: "text-blue-700 border-blue-200",
+                  enemy: "text-red-700 border-red-200"
+                }
+
+                return (
+                  <div key={type} className="space-y-2">
+                    <h3 className={`font-medium text-sm ${typeColors[type]} border-b pb-1`}>
+                      {typeLabels[type]} ({charactersOfType.length})
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {charactersOfType.map((character) => {
+                        const isSelected = selectedCharactersToDelete.has(character.id)
+
+                        return (
+                          <div
+                            key={character.id}
+                            className={`flex items-center p-3 rounded-md border cursor-pointer transition-all ${isSelected
+                              ? 'bg-red-50 border-red-200'
+                              : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                              }`}
+                            onClick={() => toggleCharacterSelection(character.id)}
+                          >
+                            <div className="mr-3">
+                              {isSelected ? (
+                                <CheckSquare className="w-4 h-4 text-red-600" />
+                              ) : (
+                                <Square className="w-4 h-4 text-gray-400" />
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 flex-1">
+                              {character.imageUrl ? (
+                                <img
+                                  src={character.imageUrl}
+                                  alt={character.name}
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${character.type === "player" ? "bg-green-500" :
+                                    character.type === "ally" ? "bg-blue-500" : "bg-red-500"
+                                  }`}>
+                                  {character.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <span className={`font-medium text-sm ${isSelected ? 'text-red-900' : 'text-gray-900'}`}>
+                                  {character.name}
+                                </span>
+                                <p className={`text-xs mt-1 capitalize ${isSelected ? 'text-red-700' : 'text-gray-600'}`}>
+                                  {character.type === "player" ? "Joueur" :
+                                    character.type === "ally" ? "Allié" : "Ennemi"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setShowDeleteCharactersDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={deleteSelectedCharacters}
+                disabled={selectedCharactersToDelete.size === 0}
+                variant="destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete {selectedCharactersToDelete.size} Characters
               </Button>
             </div>
           </div>
