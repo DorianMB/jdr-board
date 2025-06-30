@@ -43,6 +43,9 @@ export default function DrawingTool({
     const scaleX = canvas.width / rect.width
     const scaleY = canvas.height / rect.height
 
+    console.log("Canvas rect:", rect)
+    console.log("Canvas size:", canvas.width, canvas.height)
+
     // Get coordinates relative to canvas
     const x = (e.clientX - rect.left) * scaleX
     const y = (e.clientY - rect.top) * scaleY
@@ -269,10 +272,9 @@ export default function DrawingTool({
       const container = canvas.parentElement
       if (!container) return
 
-      // Set canvas size to match container
-      const rect = container.getBoundingClientRect()
-      canvas.width = rect.width
-      canvas.height = rect.height
+      // Set canvas size to fixed dimensions
+      canvas.width = 10000
+      canvas.height = 10000
 
       // Redraw all existing drawings
       const ctx = canvas.getContext("2d")
