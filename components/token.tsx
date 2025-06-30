@@ -76,7 +76,7 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
   return (
     <div
       ref={tokenRef}
-      className={`absolute w-8 h-8 scale-[1.2] rounded-full border-2 flex items-center justify-center text-xs font-bold cursor-pointer select-none z-20 ${character.type === "player"
+      className={`absolute w-8 h-8 scale-[1.2] rounded-full border-2 flex items-center justify-center text-xs font-bold cursor-pointer select-none z-50 ${character.type === "player"
         ? "border-green-500 bg-green-100 text-green-700"
         : character.type === "ally"
           ? "border-blue-500 bg-blue-100 text-blue-700"
@@ -89,7 +89,7 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
       }}
       onMouseDown={handleMouseDown}
       title={`${character.name}${tokenNumber ? ` (${tokenNumber})` : ""} (${character.type === "player" ? "Joueur" :
-          character.type === "ally" ? "Allié" : "Ennemi"
+        character.type === "ally" ? "Allié" : "Ennemi"
         })`}
     >
       <div className="relative w-full h-full">

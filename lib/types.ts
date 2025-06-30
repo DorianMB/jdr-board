@@ -39,6 +39,11 @@ export interface Drawing {
   points: { x: number; y: number }[]
   color: string
   thickness: number
+  type?: "freehand" | "rectangle" | "circle" | "line"
+  fillColor?: string
+  hasFill?: boolean
+  startPoint?: { x: number; y: number }
+  endPoint?: { x: number; y: number }
 }
 
 export interface AppData {

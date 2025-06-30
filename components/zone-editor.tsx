@@ -26,10 +26,12 @@ import {
   Brush,
   Check,
   CheckCircle,
+  Circle,
   Edit,
   Eraser,
   EyeOff,
   Home,
+  Minus,
   Move,
   Palette,
   Plus,
@@ -37,6 +39,8 @@ import {
   RotateCw,
   Save,
   Settings,
+  Shapes,
+  Square,
   Trash2,
   X,
   ZoomIn,
@@ -88,8 +92,11 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
   const [characterSearchTerm, setCharacterSearchTerm] = useState("")
   const [characterTypeFilter, setCharacterTypeFilter] = useState<"all" | "player" | "ally" | "enemy">("all")
   const [showCreateCharacter, setShowCreateCharacter] = useState(false)
-  const [drawingMode, setDrawingMode] = useState<"brush" | "eraser" | null>(null)
+  const [drawingMode, setDrawingMode] = useState<"brush" | "eraser" | "shapes" | null>(null)
+  const [shapeType, setShapeType] = useState<"rectangle" | "circle" | "line">("rectangle")
   const [drawColor, setDrawColor] = useState("#ff0000")
+  const [fillColor, setFillColor] = useState("#ff0000")
+  const [hasFill, setHasFill] = useState(false)
   const [drawThickness, setDrawThickness] = useState(3)
   const [backgroundImageUrl, setBackgroundImageUrl] = useState(zone.backgroundImage?.url || "")
   const [isEditingBackground, setIsEditingBackground] = useState(false)
@@ -1356,7 +1363,10 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
             <DrawingTool
               isActive={!!drawingMode && !isPanning}
               mode={drawingMode || "brush"}
+              shapeType={shapeType}
               color={drawColor}
+              fillColor={fillColor}
+              hasFill={hasFill}
               thickness={drawThickness}
               onDrawingComplete={addDrawing}
               onDrawingsUpdate={updateDrawings}
@@ -1413,7 +1423,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
               {/* Tool Selection */}
               <div>
                 <Label className="text-sm font-medium">Tool</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
+                <div className="grid grid-cols-3 gap-2 mt-2">
                   <Button
                     variant={drawingMode === "brush" ? "default" : "outline"}
                     onClick={() => setDrawingMode(drawingMode === "brush" ? null : "brush")}
@@ -1430,13 +1440,54 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                     <Eraser className="w-4 h-4" />
                     Eraser
                   </Button>
+                  <Button
+                    variant={drawingMode === "shapes" ? "default" : "outline"}
+                    onClick={() => setDrawingMode(drawingMode === "shapes" ? null : "shapes")}
+                    className="flex items-center gap-2"
+                  >
+                    <Shapes className="w-4 h-4" />
+                    Shapes
+                  </Button>
                 </div>
               </div>
 
-              {/* Color Selection (only for brush) */}
-              {drawingMode === "brush" && (
+              {/* Shape Selection (only for shapes mode) */}
+              {drawingMode === "shapes" && (
                 <div>
-                  <Label className="text-sm font-medium">Color</Label>
+                  <Label className="text-sm font-medium">Shape Type</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    <Button
+                      variant={shapeType === "rectangle" ? "default" : "outline"}
+                      onClick={() => setShapeType("rectangle")}
+                      className="flex items-center gap-2"
+                    >
+                      <Square className="w-4 h-4" />
+                      Rectangle
+                    </Button>
+                    <Button
+                      variant={shapeType === "circle" ? "default" : "outline"}
+                      onClick={() => setShapeType("circle")}
+                      className="flex items-center gap-2"
+                    >
+                      <Circle className="w-4 h-4" />
+                      Circle
+                    </Button>
+                    <Button
+                      variant={shapeType === "line" ? "default" : "outline"}
+                      onClick={() => setShapeType("line")}
+                      className="flex items-center gap-2"
+                    >
+                      <Minus className="w-4 h-4" />
+                      Line
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Color Selection (for brush and shapes) */}
+              {(drawingMode === "brush" || drawingMode === "shapes") && (
+                <div>
+                  <Label className="text-sm font-medium">Border Color</Label>
                   <input
                     type="color"
                     value={drawColor}
@@ -1449,7 +1500,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
               {/* Thickness */}
               <div>
                 <Label className="text-sm font-medium">
-                  {drawingMode === "eraser" ? "Eraser Size" : "Brush Size"}: {drawThickness}px
+                  {drawingMode === "eraser" ? "Eraser Size" : drawingMode === "shapes" ? "Border Thickness" : "Brush Size"}: {drawThickness}px
                 </Label>
                 <Slider
                   value={[drawThickness]}
@@ -1460,6 +1511,30 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                   className="mt-2"
                 />
               </div>
+
+              {/* Fill Options (only for shapes) */}
+              {drawingMode === "shapes" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Fill Shape</Label>
+                    <Switch
+                      checked={hasFill}
+                      onCheckedChange={setHasFill}
+                    />
+                  </div>
+                  {hasFill && (
+                    <div>
+                      <Label className="text-sm font-medium">Fill Color</Label>
+                      <input
+                        type="color"
+                        value={fillColor}
+                        onChange={(e) => setFillColor(e.target.value)}
+                        className="mt-2 w-full h-12 rounded border"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Actions */}
               <div className="space-y-2">
