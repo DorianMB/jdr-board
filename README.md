@@ -2,7 +2,7 @@
 
 *Empowering Collaboration, Igniting Creativity, Transforming Workflows*
 
-![Last Commit](https://img.shields.io/github/last-commit/username/jdr-board?label=last%20commit&color=blue)
+![Last Commit](https://img.shields.io/github/last-commit/DorianMB/jdr-board?label=last%20commit&color=blue&style=flat)
 ![TypeScript](https://img.shields.io/badge/typescript-97.8%25-blue)
 ![Languages](https://img.shields.io/badge/languages-3-brightgreen)
 
