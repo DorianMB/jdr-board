@@ -11,7 +11,6 @@ interface DrawingToolProps {
   onDrawingComplete: (drawing: Drawing) => void
   onDrawingsUpdate: (drawings: Drawing[]) => void
   drawings: Drawing[]
-  gridSize: number
 }
 
 export default function DrawingTool({
@@ -22,7 +21,6 @@ export default function DrawingTool({
   onDrawingComplete,
   onDrawingsUpdate,
   drawings,
-  gridSize,
 }: DrawingToolProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)

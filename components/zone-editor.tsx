@@ -87,7 +87,6 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
   const [history, setHistory] = useState<HistoryState[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -436,14 +435,6 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
     saveToHistory()
   }
 
-  const deleteTokenByCharacter = (tokenId: string) => {
-    setZone((prev) => ({
-      ...prev,
-      tokens: (prev.tokens || []).filter((token) => token.id !== tokenId),
-    }))
-    saveToHistory()
-  }
-
   const toggleTokenDead = (tokenId: string) => {
     setZone((prev) => ({
       ...prev,
@@ -476,14 +467,6 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
     })
     // Save to history after state update
     setTimeout(() => saveToHistory(), 0)
-  }
-
-  const undoDrawing = () => {
-    setZone((prev) => ({
-      ...prev,
-      drawings: (prev.drawings || []).slice(0, -1),
-    }))
-    saveToHistory()
   }
 
   const clearDrawings = () => {
@@ -809,7 +792,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => deleteTokenByCharacter(token.id)}
+                      onClick={() => deleteToken(token.id)}
                       className="h-8 w-8 p-0 ml-2"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1012,7 +995,6 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
               onDrawingComplete={addDrawing}
               onDrawingsUpdate={updateDrawings}
               drawings={zone.drawings || []}
-              gridSize={zone.gridSize}
             />
 
             {/* Tokens */}
@@ -1113,9 +1095,9 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
 
               {/* Actions */}
               <div className="space-y-2">
-                <Button variant="outline" onClick={undoDrawing} className="w-full bg-transparent">
+                <Button variant="outline" onClick={undo} className="w-full bg-transparent">
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  Undo Last Drawing
+                  Undo Last Action
                 </Button>
                 <Button variant="outline" onClick={clearDrawings} className="w-full bg-transparent">
                   <X className="w-4 h-4 mr-2" />
