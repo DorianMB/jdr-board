@@ -14,9 +14,24 @@ interface TokenProps {
   allTokens: Token[]
   allCharacters: Character[]
   isDrawingMode?: boolean
+  zoom?: number
+  panOffset?: { x: number; y: number }
+  containerRef?: React.RefObject<HTMLDivElement | null>
 }
 
-export default function TokenComponent({ token, character, gridSize, onUpdate, isEditMode, allTokens, allCharacters, isDrawingMode = false }: TokenProps) {
+export default function TokenComponent({
+  token,
+  character,
+  gridSize,
+  onUpdate,
+  isEditMode,
+  allTokens,
+  allCharacters,
+  isDrawingMode = false,
+  zoom = 1,
+  panOffset = { x: 0, y: 0 },
+  containerRef
+}: TokenProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const tokenRef = useRef<HTMLDivElement>(null)
@@ -24,19 +39,38 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
   // Calculer le numéro du token s'il y en a plusieurs identiques
   const tokenNumber = getTokenNumber(allTokens, token, allCharacters)
 
+  // Fonction pour convertir les coordonnées écran en coordonnées de la grille
+  const screenToGridCoordinates = (screenX: number, screenY: number) => {
+    if (!containerRef?.current) return { x: screenX, y: screenY }
+
+    const containerRect = containerRef.current.getBoundingClientRect()
+
+    // Calculer les coordonnées relatives au conteneur
+    const relativeX = screenX - containerRect.left
+    const relativeY = screenY - containerRect.top
+
+    // Appliquer la transformation inverse (zoom et pan)
+    const gridX = (relativeX / zoom) - (panOffset.x / zoom)
+    const gridY = (relativeY / zoom) - (panOffset.y / zoom)
+
+    return { x: gridX, y: gridY }
+  }
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!isEditMode) return
 
     e.preventDefault()
     e.stopPropagation()
 
-    const rect = tokenRef.current?.getBoundingClientRect()
-    if (!rect) return
-
     setIsDragging(true)
+
+    // Convertir la position de la souris en coordonnées de grille
+    const gridCoords = screenToGridCoordinates(e.clientX, e.clientY)
+
+    // Calculer l'offset par rapport au centre du token
     setDragOffset({
-      x: e.clientX - rect.left - rect.width / 2,
-      y: e.clientY - rect.top - rect.height / 2,
+      x: gridCoords.x - token.x,
+      y: gridCoords.y - token.y,
     })
   }
 
@@ -44,8 +78,12 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
     if (!isDragging) return
 
     const handleMouseMove = (e: MouseEvent) => {
-      const newX = e.clientX - dragOffset.x
-      const newY = e.clientY - dragOffset.y
+      // Convertir la position de la souris en coordonnées de grille
+      const gridCoords = screenToGridCoordinates(e.clientX, e.clientY)
+
+      // Calculer la nouvelle position en soustrayant l'offset
+      const newX = gridCoords.x - dragOffset.x
+      const newY = gridCoords.y - dragOffset.y
 
       // Snap to grid
       const gridX = Math.round(newX / gridSize)
@@ -72,7 +110,7 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
     }
-  }, [isDragging, dragOffset, gridSize, onUpdate])
+  }, [isDragging, dragOffset, gridSize, onUpdate, zoom, panOffset, containerRef])
 
   return (
     <div

@@ -1390,6 +1390,9 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                   allTokens={zone.tokens || []}
                   allCharacters={characters}
                   isDrawingMode={!!drawingMode}
+                  zoom={zoom}
+                  panOffset={panOffset}
+                  containerRef={containerRef}
                 />
               )
             })}
