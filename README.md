@@ -77,7 +77,7 @@ Assurez-vous d'avoir installé :
 
 1. **Clonez le repository**
    ```bash
-   git clone https://github.com/votre-username/jdr-board.git
+   git clone https://github.com/DorianMB/jdr-board.git
    cd jdr-board
    ```
 
@@ -425,8 +425,8 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ## 📧 Contact
 
-- **Issues** : [GitHub Issues](https://github.com/votre-username/jdr-board/issues)
-- **Discussions** : [GitHub Discussions](https://github.com/votre-username/jdr-board/discussions)
+- **Issues** : [GitHub Issues](https://github.com/DorianMB/jdr-board/issues)
+- **Discussions** : [GitHub Discussions](https://github.com/DorianMB/jdr-board/discussions)
 - **Email** : votre-email@example.com
 
 ---
@@ -449,7 +449,7 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 *Transformez vos sessions de jeu de rôle avec un outil moderne et intuitif*
 
-[![GitHub stars](https://img.shields.io/github/stars/votre-username/jdr-board?style=social)](https://github.com/votre-username/jdr-board/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/votre-username/jdr-board?style=social)](https://github.com/votre-username/jdr-board/network/members)
+[![GitHub stars](https://img.shields.io/github/stars/DorianMB/jdr-board?style=social)](https://github.com/DorianMB/jdr-board/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/DorianMB/jdr-board?style=social)](https://github.com/DorianMB/jdr-board/network/members)
 
 </div>
