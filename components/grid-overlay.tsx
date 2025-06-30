@@ -12,8 +12,8 @@ export default function GridOverlay({ gridSize, color, opacity }: GridOverlayPro
   const gridStyle = useMemo(() => {
     return {
       backgroundImage: `
-        linear-gradient(to right, ${color} 1px, transparent 1px),
-        linear-gradient(to bottom, ${color} 1px, transparent 1px)
+        linear-gradient(to right, ${color} 2px, transparent 2px),
+        linear-gradient(to bottom, ${color} 2px, transparent 2px)
       `,
       backgroundSize: `${gridSize}px ${gridSize}px`,
       opacity,
