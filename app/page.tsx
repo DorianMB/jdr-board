@@ -255,49 +255,153 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {data.characters.map((character) => (
-                  <Card key={character.id}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-white font-bold ${character.type === "player"
-                              ? "border-green-500 bg-green-600"
-                              : character.type === "ally"
-                                ? "border-blue-500 bg-blue-600"
-                                : "border-red-500 bg-red-600"
-                              }`}
-                          >
-                            {character.imageUrl ? (
-                              <img
-                                src={character.imageUrl || "/placeholder.svg"}
-                                alt={character.name}
-                                className="w-full h-full rounded-full object-cover"
-                              />
-                            ) : (
-                              /^[a-zA-Z]/.test(character.name)
-                                ? character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
-                                : character.name.replace(/\D/g, "")
-                            )}
-                          </div>
-                          <div>
-                            <CardTitle className="text-lg">{character.name}</CardTitle>
-                            <CardDescription className="capitalize">{character.type}</CardDescription>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => openEditCharacterDialog(character)}>
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => deleteCharacter(character.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                  </Card>
-                ))}
+              <div className="space-y-8">
+                {/* Players Section */}
+                {data.characters.filter(c => c.type === "player").length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                      <h3 className="text-lg font-semibold text-green-700">Players</h3>
+                      <div className="flex-1 h-px bg-green-200"></div>
+                      <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                        {data.characters.filter(c => c.type === "player").length}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {data.characters.filter(c => c.type === "player").map((character) => (
+                        <Card key={character.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-green-500 bg-gradient-to-r from-green-50 to-white">
+                          <CardHeader className="py-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full border-2 border-green-500 bg-green-600 flex items-center justify-center text-white font-bold overflow-hidden">
+                                  {character.imageUrl ? (
+                                    <img
+                                      src={character.imageUrl || "/placeholder.svg"}
+                                      alt={character.name}
+                                      className="w-full h-full rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    character.name.charAt(0).toUpperCase()
+                                  )}
+                                </div>
+                                <div>
+                                  <CardTitle className="text-base font-medium">{character.name}</CardTitle>
+                                  <CardDescription className="text-xs text-green-600 font-medium">Joueur</CardDescription>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="sm" onClick={() => openEditCharacterDialog(character)} className="h-8 w-8 p-0 hover:bg-green-100">
+                                  <Edit className="w-3 h-3" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => deleteCharacter(character.id)} className="h-8 w-8 p-0 hover:bg-red-100">
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardHeader>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Allies Section */}
+                {data.characters.filter(c => c.type === "ally").length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                      <h3 className="text-lg font-semibold text-blue-700">Alliés</h3>
+                      <div className="flex-1 h-px bg-blue-200"></div>
+                      <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                        {data.characters.filter(c => c.type === "ally").length}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {data.characters.filter(c => c.type === "ally").map((character) => (
+                        <Card key={character.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-white">
+                          <CardHeader className="py-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full border-2 border-blue-500 bg-blue-600 flex items-center justify-center text-white font-bold overflow-hidden">
+                                  {character.imageUrl ? (
+                                    <img
+                                      src={character.imageUrl || "/placeholder.svg"}
+                                      alt={character.name}
+                                      className="w-full h-full rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    character.name.charAt(0).toUpperCase()
+                                  )}
+                                </div>
+                                <div>
+                                  <CardTitle className="text-base font-medium">{character.name}</CardTitle>
+                                  <CardDescription className="text-xs text-blue-600 font-medium">Allié</CardDescription>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="sm" onClick={() => openEditCharacterDialog(character)} className="h-8 w-8 p-0 hover:bg-blue-100">
+                                  <Edit className="w-3 h-3" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => deleteCharacter(character.id)} className="h-8 w-8 p-0 hover:bg-red-100">
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardHeader>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Enemies Section */}
+                {data.characters.filter(c => c.type === "enemy").length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                      <h3 className="text-lg font-semibold text-red-700">Ennemis</h3>
+                      <div className="flex-1 h-px bg-red-200"></div>
+                      <span className="text-sm text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                        {data.characters.filter(c => c.type === "enemy").length}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {data.characters.filter(c => c.type === "enemy").map((character) => (
+                        <Card key={character.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-red-500 bg-gradient-to-r from-red-50 to-white">
+                          <CardHeader className="py-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full border-2 border-red-500 bg-red-600 flex items-center justify-center text-white font-bold overflow-hidden">
+                                  {character.imageUrl ? (
+                                    <img
+                                      src={character.imageUrl || "/placeholder.svg"}
+                                      alt={character.name}
+                                      className="w-full h-full rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    character.name.charAt(0).toUpperCase()
+                                  )}
+                                </div>
+                                <div>
+                                  <CardTitle className="text-base font-medium">{character.name}</CardTitle>
+                                  <CardDescription className="text-xs text-red-600 font-medium">Ennemi</CardDescription>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="sm" onClick={() => openEditCharacterDialog(character)} className="h-8 w-8 p-0 hover:bg-red-100">
+                                  <Edit className="w-3 h-3" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => deleteCharacter(character.id)} className="h-8 w-8 p-0 hover:bg-red-100">
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardHeader>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </TabsContent>
