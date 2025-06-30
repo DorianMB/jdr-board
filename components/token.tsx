@@ -13,9 +13,10 @@ interface TokenProps {
   isEditMode: boolean
   allTokens: Token[]
   allCharacters: Character[]
+  isDrawingMode?: boolean
 }
 
-export default function TokenComponent({ token, character, gridSize, onUpdate, isEditMode, allTokens, allCharacters }: TokenProps) {
+export default function TokenComponent({ token, character, gridSize, onUpdate, isEditMode, allTokens, allCharacters, isDrawingMode = false }: TokenProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const tokenRef = useRef<HTMLDivElement>(null)
@@ -76,7 +77,7 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
   return (
     <div
       ref={tokenRef}
-      className={`absolute w-8 h-8 scale-[1.2] rounded-full border-2 flex items-center justify-center text-xs font-bold cursor-pointer select-none z-50 ${character.type === "player"
+      className={`absolute w-8 h-8 scale-[1.2] rounded-full border-2 flex items-center justify-center text-xs font-bold select-none z-50 ${character.type === "player"
         ? "border-green-500 bg-green-100 text-green-700"
         : character.type === "ally"
           ? "border-blue-500 bg-blue-100 text-blue-700"
@@ -85,7 +86,8 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
       style={{
         left: token.x - 16,
         top: token.y - 16,
-        cursor: isEditMode ? (isDragging ? "grabbing" : "grab") : "default",
+        cursor: isDrawingMode ? "crosshair" : isEditMode ? (isDragging ? "grabbing" : "grab") : "default",
+        pointerEvents: isDrawingMode ? "none" : "auto",
       }}
       onMouseDown={handleMouseDown}
       title={`${character.name}${tokenNumber ? ` (${tokenNumber})` : ""} (${character.type === "player" ? "Joueur" :

@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import OverlayMenu from "./overlay-menu"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { loadAppData, saveAppData } from "@/lib/storage"
@@ -1078,91 +1078,91 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
 
       {/* Left Character Sidebar */}
       {showUI && (
-        <Sheet open={showCharacterMenu} onOpenChange={setShowCharacterMenu}>
-          <SheetContent side="left" className="w-80">
-            <SheetHeader>
-              <SheetTitle>Characters on Board</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6 space-y-3">
-              {charactersOnBoard.map(({ token, character }) => {
-                const tokensCount = charactersOnBoard.filter(item =>
-                  item.character.name === character.name && item.character.type === character.type
-                ).length
-                const isDead = token.isDead || false
-                const tokenNumber = getTokenNumber(zone.tokens || [], token, characters)
-                const displayName = getTokenDisplayName(token, characters, zone.tokens || [])
+        <OverlayMenu
+          isOpen={showCharacterMenu}
+          onClose={() => setShowCharacterMenu(false)}
+          title="Characters on Board"
+          side="left"
+        >
+          <div className="space-y-3">
+            {charactersOnBoard.map(({ token, character }) => {
+              const tokensCount = charactersOnBoard.filter(item =>
+                item.character.name === character.name && item.character.type === character.type
+              ).length
+              const isDead = token.isDead || false
+              const tokenNumber = getTokenNumber(zone.tokens || [], token, characters)
+              const displayName = getTokenDisplayName(token, characters, zone.tokens || [])
 
-                return (
-                  <div key={token.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div
-                        className={`relative w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${character.type === "player"
-                          ? "border-green-500 bg-green-100 text-green-700"
-                          : character.type === "ally"
-                            ? "border-blue-500 bg-blue-100 text-blue-700"
-                            : "border-red-500 bg-red-100 text-red-700"
-                          } ${isDead ? "grayscale opacity-50" : ""}`}
-                      >
-                        {character.imageUrl ? (
-                          <img
-                            src={character.imageUrl || "/placeholder.svg"}
-                            alt={character.name}
-                            className="w-full h-full rounded-full object-cover"
-                          />
-                        ) : (
-                          /^[a-zA-Z]/.test(character.name)
-                            ? character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
-                            : character.name.replace(/\D/g, "")
-                        )}
-                        {/* Afficher le numéro en petit en bas à droite si nécessaire */}
-                        {tokenNumber && (
-                          <div className="absolute -bottom-1 -right-1 bg-white border border-gray-300 rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold text-gray-700">
-                            {tokenNumber}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className={`font-medium text-sm ${isDead ? "line-through text-gray-500" : ""}`}>
-                          {displayName}
-                        </h3>
-                        <p className="text-xs text-gray-500 capitalize">
-                          {character.type === "player" ? t('player') :
-                            character.type === "ally" ? t('ally') : t('enemy')} • {tokensCount} {t('tokens')}
-                          {isDead && ` • ${t('dead')}`}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Label htmlFor={`dead-${token.id}`} className="text-xs">
-                            Dead
-                          </Label>
-                          <Switch
-                            id={`dead-${token.id}`}
-                            checked={isDead}
-                            onCheckedChange={() => toggleTokenDead(token.id)}
-                          />
+              return (
+                <div key={token.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div
+                      className={`relative w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${character.type === "player"
+                        ? "border-green-500 bg-green-100 text-green-700"
+                        : character.type === "ally"
+                          ? "border-blue-500 bg-blue-100 text-blue-700"
+                          : "border-red-500 bg-red-100 text-red-700"
+                        } ${isDead ? "grayscale opacity-50" : ""}`}
+                    >
+                      {character.imageUrl ? (
+                        <img
+                          src={character.imageUrl || "/placeholder.svg"}
+                          alt={character.name}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        /^[a-zA-Z]/.test(character.name)
+                          ? character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
+                          : character.name.replace(/\D/g, "")
+                      )}
+                      {/* Afficher le numéro en petit en bas à droite si nécessaire */}
+                      {tokenNumber && (
+                        <div className="absolute -bottom-1 -right-1 bg-white border border-gray-300 rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold text-gray-700">
+                          {tokenNumber}
                         </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className={`font-medium text-sm ${isDead ? "line-through text-gray-500" : ""}`}>
+                        {displayName}
+                      </h3>
+                      <p className="text-xs text-gray-500 capitalize">
+                        {character.type === "player" ? t('player') :
+                          character.type === "ally" ? t('ally') : t('enemy')} • {tokensCount} {t('tokens')}
+                        {isDead && ` • ${t('dead')}`}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Label htmlFor={`dead-${token.id}`} className="text-xs">
+                          Dead
+                        </Label>
+                        <Switch
+                          id={`dead-${token.id}`}
+                          checked={isDead}
+                          onCheckedChange={() => toggleTokenDead(token.id)}
+                        />
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => deleteToken(token.id)}
-                      className="h-8 w-8 p-0 ml-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   </div>
-                )
-              })}
-              {charactersOnBoard.length === 0 && (
-                <div className="text-center text-gray-500 py-8">
-                  No characters on the board yet.
-                  <br />
-                  {t('addTokensMessage')}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => deleteToken(token.id)}
+                    className="h-8 w-8 p-0 ml-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+              )
+            })}
+            {charactersOnBoard.length === 0 && (
+              <div className="text-center text-gray-500 py-8">
+                No characters on the board yet.
+                <br />
+                {t('addTokensMessage')}
+              </div>
+            )}
+          </div>
+        </OverlayMenu>
       )}
 
       {/* Character Menu Trigger */}
@@ -1170,8 +1170,8 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
         <Button
           variant="outline"
           size="sm"
-          className="fixed left-4 top-20 z-50 bg-white hover:text-white hover:bg-black"
-          onClick={() => setShowCharacterMenu(true)}
+          className={`fixed left-4 top-20 z-50 ${showCharacterMenu ? 'bg-black text-white' : 'bg-white'} hover:text-white hover:bg-black`}
+          onClick={() => setShowCharacterMenu(!showCharacterMenu)}
         >
           {t('characters')} ({charactersOnBoard.length})
         </Button>
@@ -1389,6 +1389,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                   isEditMode={editMode && !isPanning}
                   allTokens={zone.tokens || []}
                   allCharacters={characters}
+                  isDrawingMode={!!drawingMode}
                 />
               )
             })}
@@ -1408,159 +1409,153 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
 
       {/* Right Drawing Tools Sidebar */}
       {showUI && (
-        <Sheet open={showBrushMenu} onOpenChange={setShowBrushMenu}>
-          <SheetContent side="right" className="w-80">
-            <SheetHeader>
-              <SheetTitle>Drawing Tools</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6 space-y-6">
-              {/* Back Button */}
-              <Button variant="outline" onClick={() => handleNavigation(() => router.push("/"))} className="w-full">
-                <Home className="w-4 h-4 mr-2" />
-                Back to Home
-              </Button>
-
-              {/* Tool Selection */}
-              <div>
-                <Label className="text-sm font-medium">Tool</Label>
-                <div className="grid grid-cols-3 gap-2 mt-2">
-                  <Button
-                    variant={drawingMode === "brush" ? "default" : "outline"}
-                    onClick={() => setDrawingMode(drawingMode === "brush" ? null : "brush")}
-                    className="flex items-center gap-2"
-                  >
-                    <Brush className="w-4 h-4" />
-                    Brush
-                  </Button>
-                  <Button
-                    variant={drawingMode === "eraser" ? "default" : "outline"}
-                    onClick={() => setDrawingMode(drawingMode === "eraser" ? null : "eraser")}
-                    className="flex items-center gap-2"
-                  >
-                    <Eraser className="w-4 h-4" />
-                    Eraser
-                  </Button>
-                  <Button
-                    variant={drawingMode === "shapes" ? "default" : "outline"}
-                    onClick={() => setDrawingMode(drawingMode === "shapes" ? null : "shapes")}
-                    className="flex items-center gap-2"
-                  >
-                    <Shapes className="w-4 h-4" />
-                    Shapes
-                  </Button>
-                </div>
-              </div>
-
-              {/* Shape Selection (only for shapes mode) */}
-              {drawingMode === "shapes" && (
-                <div>
-                  <Label className="text-sm font-medium">Shape Type</Label>
-                  <div className="grid grid-cols-3 gap-2 mt-2">
-                    <Button
-                      variant={shapeType === "rectangle" ? "default" : "outline"}
-                      onClick={() => setShapeType("rectangle")}
-                      className="flex items-center gap-2"
-                    >
-                      <Square className="w-4 h-4" />
-                      Rectangle
-                    </Button>
-                    <Button
-                      variant={shapeType === "circle" ? "default" : "outline"}
-                      onClick={() => setShapeType("circle")}
-                      className="flex items-center gap-2"
-                    >
-                      <Circle className="w-4 h-4" />
-                      Circle
-                    </Button>
-                    <Button
-                      variant={shapeType === "line" ? "default" : "outline"}
-                      onClick={() => setShapeType("line")}
-                      className="flex items-center gap-2"
-                    >
-                      <Minus className="w-4 h-4" />
-                      Line
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Color Selection (for brush and shapes) */}
-              {(drawingMode === "brush" || drawingMode === "shapes") && (
-                <div>
-                  <Label className="text-sm font-medium">Border Color</Label>
-                  <input
-                    type="color"
-                    value={drawColor}
-                    onChange={(e) => setDrawColor(e.target.value)}
-                    className="mt-2 w-full h-12 rounded border"
-                  />
-                </div>
-              )}
-
-              {/* Thickness */}
-              <div>
-                <Label className="text-sm font-medium">
-                  {drawingMode === "eraser" ? "Eraser Size" : drawingMode === "shapes" ? "Border Thickness" : "Brush Size"}: {drawThickness}px
-                </Label>
-                <Slider
-                  value={[drawThickness]}
-                  onValueChange={(value) => setDrawThickness(value[0])}
-                  max={20}
-                  min={1}
-                  step={1}
-                  className="mt-2"
-                />
-              </div>
-
-              {/* Fill Options (only for shapes) */}
-              {drawingMode === "shapes" && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Fill Shape</Label>
-                    <Switch
-                      checked={hasFill}
-                      onCheckedChange={setHasFill}
-                    />
-                  </div>
-                  {hasFill && (
-                    <div>
-                      <Label className="text-sm font-medium">Fill Color</Label>
-                      <input
-                        type="color"
-                        value={fillColor}
-                        onChange={(e) => setFillColor(e.target.value)}
-                        className="mt-2 w-full h-12 rounded border"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="space-y-2">
-                <Button variant="outline" onClick={undo} className="w-full bg-transparent">
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Undo Last Action
+        <OverlayMenu
+          isOpen={showBrushMenu}
+          onClose={() => setShowBrushMenu(false)}
+          title="Drawing Tools"
+          side="right"
+        >
+          <div className="space-y-6">
+            {/* Tool Selection */}
+            <div>
+              <Label className="text-sm font-medium">Tool</Label>
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                <Button
+                  variant={drawingMode === "brush" ? "default" : "outline"}
+                  onClick={() => setDrawingMode(drawingMode === "brush" ? null : "brush")}
+                  className="flex items-center gap-2"
+                >
+                  <Brush className="w-4 h-4" />
+                  Brush
                 </Button>
-                <Button variant="outline" onClick={clearDrawings} className="w-full bg-transparent">
-                  <X className="w-4 h-4 mr-2" />
-                  Clear All Drawings
+                <Button
+                  variant={drawingMode === "eraser" ? "default" : "outline"}
+                  onClick={() => setDrawingMode(drawingMode === "eraser" ? null : "eraser")}
+                  className="flex items-center gap-2"
+                >
+                  <Eraser className="w-4 h-4" />
+                  Eraser
+                </Button>
+                <Button
+                  variant={drawingMode === "shapes" ? "default" : "outline"}
+                  onClick={() => setDrawingMode(drawingMode === "shapes" ? null : "shapes")}
+                  className="flex items-center gap-2"
+                >
+                  <Shapes className="w-4 h-4" />
+                  Shapes
                 </Button>
               </div>
             </div>
-          </SheetContent>
-        </Sheet>
+
+            {/* Shape Selection (only for shapes mode) */}
+            {drawingMode === "shapes" && (
+              <div>
+                <Label className="text-sm font-medium">Shape Type</Label>
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  <Button
+                    variant={shapeType === "rectangle" ? "default" : "outline"}
+                    onClick={() => setShapeType("rectangle")}
+                    className="flex items-center gap-2"
+                  >
+                    <Square className="w-4 h-4" />
+                    Rectangle
+                  </Button>
+                  <Button
+                    variant={shapeType === "circle" ? "default" : "outline"}
+                    onClick={() => setShapeType("circle")}
+                    className="flex items-center gap-2"
+                  >
+                    <Circle className="w-4 h-4" />
+                    Circle
+                  </Button>
+                  <Button
+                    variant={shapeType === "line" ? "default" : "outline"}
+                    onClick={() => setShapeType("line")}
+                    className="flex items-center gap-2"
+                  >
+                    <Minus className="w-4 h-4" />
+                    Line
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Color Selection (for brush and shapes) */}
+            {(drawingMode === "brush" || drawingMode === "shapes") && (
+              <div>
+                <Label className="text-sm font-medium">Border Color</Label>
+                <input
+                  type="color"
+                  value={drawColor}
+                  onChange={(e) => setDrawColor(e.target.value)}
+                  className="mt-2 w-full h-12 rounded border"
+                />
+              </div>
+            )}
+
+            {/* Thickness */}
+            <div>
+              <Label className="text-sm font-medium">
+                {drawingMode === "eraser" ? "Eraser Size" : drawingMode === "shapes" ? "Border Thickness" : "Brush Size"}: {drawThickness}px
+              </Label>
+              <Slider
+                value={[drawThickness]}
+                onValueChange={(value) => setDrawThickness(value[0])}
+                max={20}
+                min={1}
+                step={1}
+                className="mt-2"
+              />
+            </div>
+
+            {/* Fill Options (only for shapes) */}
+            {drawingMode === "shapes" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Fill Shape</Label>
+                  <Switch
+                    checked={hasFill}
+                    onCheckedChange={setHasFill}
+                  />
+                </div>
+                {hasFill && (
+                  <div>
+                    <Label className="text-sm font-medium">Fill Color</Label>
+                    <input
+                      type="color"
+                      value={fillColor}
+                      onChange={(e) => setFillColor(e.target.value)}
+                      className="mt-2 w-full h-12 rounded border"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="space-y-2">
+              <Button variant="outline" onClick={undo} className="w-full bg-transparent">
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Undo Last Action
+              </Button>
+              <Button variant="outline" onClick={clearDrawings} className="w-full bg-transparent">
+                <X className="w-4 h-4 mr-2" />
+                Clear All Drawings
+              </Button>
+            </div>
+          </div>
+        </OverlayMenu>
       )}
 
       {/* Drawing Tools Trigger */}
       {showUI && (
         <Button
-          variant={drawingMode ? "outline" : "outline"}
+          variant="outline"
           size="sm"
-          className={`fixed right-4 top-20 z-50 [&_svg]:hover:stroke-white hover:bg-black ${!drawingMode ? "bg-white" : "bg-black"}`}
-          onClick={() => setShowBrushMenu(true)}
+          className={`fixed right-4 top-20 z-50 [&_svg]:hover:stroke-white hover:bg-black ${showBrushMenu ? "bg-black text-white" : "bg-white"}`}
+          onClick={() => setShowBrushMenu(!showBrushMenu)}
         >
-          <Palette className="w-4 h-4" color={!drawingMode ? "black" : "white"} />
+          <Palette className="w-4 h-4" color={showBrushMenu ? "white" : "black"} />
         </Button>
       )}
 
