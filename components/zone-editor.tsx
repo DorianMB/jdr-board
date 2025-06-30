@@ -285,7 +285,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
     setShowExitConfirmation(false)
   }
 
-  // Mouse wheel panning
+  // Mouse wheel panning and scrolling
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
@@ -322,12 +322,36 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
       }
     }
 
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+
+      // Facteur de sensibilité pour le déplacement
+      const sensitivity = 1.5
+
+      // Déplacement horizontal avec Shift + scroll ou scroll horizontal
+      if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        const deltaX = e.shiftKey ? e.deltaY : e.deltaX
+        setPanOffset(prev => ({
+          ...prev,
+          x: prev.x - deltaX * sensitivity
+        }))
+      } else {
+        // Déplacement vertical avec scroll normal
+        setPanOffset(prev => ({
+          ...prev,
+          y: prev.y - e.deltaY * sensitivity
+        }))
+      }
+    }
+
     container.addEventListener("mousedown", handleMouseDown)
+    container.addEventListener("wheel", handleWheel, { passive: false })
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
 
     return () => {
       container.removeEventListener("mousedown", handleMouseDown)
+      container.removeEventListener("wheel", handleWheel)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
     }
