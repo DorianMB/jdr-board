@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import type { Character, Token } from "@/lib/types"
 import { useEffect, useRef, useState } from "react"
 
