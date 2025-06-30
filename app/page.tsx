@@ -12,82 +12,17 @@ import type { AppData, Character, Zone } from "@/lib/types"
 import { Download, Edit, Map, Plus, Trash2, Upload, Users, Zap, CheckSquare, Square } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+
+// Utilitaire pour rendre un composant strictement côté client (évite l'hydratation SSR mismatch)
+function ClientOnly({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return <>{children}</>;
+}
 import { useLanguage } from "@/hooks/use-language"
 import { LanguageToggle } from "@/components/language-toggle"
 
-// Liste étendue des ennemis de D&D
-const basicDnDEnemies = [
-  // Créatures faibles (CR 0-1/2)
-  { name: "Gobelin", challenge: "CR 1/4", description: "Petit humanoïde chaotique mauvais", category: "Humanoïdes" },
-  { name: "Kobold", challenge: "CR 1/8", description: "Petit humanoïde loyal mauvais", category: "Humanoïdes" },
-  { name: "Bandit", challenge: "CR 1/8", description: "Humanoïde moyen chaotique mauvais", category: "Humanoïdes" },
-  { name: "Cultiste", challenge: "CR 1/8", description: "Humanoïde moyen chaotique mauvais", category: "Humanoïdes" },
-  { name: "Garde", challenge: "CR 1/8", description: "Humanoïde moyen loyal neutre", category: "Humanoïdes" },
-  { name: "Orc", challenge: "CR 1/2", description: "Humanoïde moyen chaotique mauvais", category: "Humanoïdes" },
-  { name: "Gnoll", challenge: "CR 1/2", description: "Humanoïde moyen chaotique mauvais", category: "Humanoïdes" },
-  { name: "Hobgobelin", challenge: "CR 1/2", description: "Humanoïde moyen loyal mauvais", category: "Humanoïdes" },
-  { name: "Duergar", challenge: "CR 1", description: "Humanoïde moyen loyal mauvais", category: "Humanoïdes" },
-  { name: "Githyanki", challenge: "CR 3", description: "Humanoïde moyen loyal mauvais", category: "Humanoïdes" },
-
-  // Morts-vivants
-  { name: "Squelette", challenge: "CR 1/4", description: "Mort-vivant moyen loyal mauvais", category: "Morts-vivants" },
-  { name: "Zombie", challenge: "CR 1/4", description: "Mort-vivant moyen neutre mauvais", category: "Morts-vivants" },
-  { name: "Goule", challenge: "CR 1", description: "Mort-vivant moyen chaotique mauvais", category: "Morts-vivants" },
-  { name: "Spectre", challenge: "CR 1", description: "Mort-vivant moyen chaotique mauvais", category: "Morts-vivants" },
-  { name: "Wight", challenge: "CR 3", description: "Mort-vivant moyen neutre mauvais", category: "Morts-vivants" },
-  { name: "Momie", challenge: "CR 3", description: "Mort-vivant moyen loyal mauvais", category: "Morts-vivants" },
-  { name: "Banshee", challenge: "CR 4", description: "Mort-vivant moyen chaotique mauvais", category: "Morts-vivants" },
-  { name: "Ombre", challenge: "CR 1/2", description: "Mort-vivant moyen chaotique mauvais", category: "Morts-vivants" },
-
-  // Bêtes et animaux
-  { name: "Loup", challenge: "CR 1/4", description: "Bête moyenne non alignée", category: "Bêtes" },
-  { name: "Ours brun", challenge: "CR 1", description: "Grande bête non alignée", category: "Bêtes" },
-  { name: "Ours-hibou", challenge: "CR 3", description: "Grande monstruosité non alignée", category: "Bêtes" },
-  { name: "Araignée géante", challenge: "CR 1", description: "Grande bête non alignée", category: "Bêtes" },
-  { name: "Loup sinistre", challenge: "CR 1/4", description: "Monstruosité moyenne neutre mauvaise", category: "Bêtes" },
-  { name: "Sanglier", challenge: "CR 1/4", description: "Bête moyenne non alignée", category: "Bêtes" },
-  { name: "Panthère", challenge: "CR 1/4", description: "Bête moyenne non alignée", category: "Bêtes" },
-
-  // Lycanthropes
-  { name: "Loup-garou", challenge: "CR 3", description: "Humanoïde moyen chaotique mauvais", category: "Lycanthropes" },
-  { name: "Rat-garou", challenge: "CR 2", description: "Humanoïde moyen loyal mauvais", category: "Lycanthropes" },
-  { name: "Sanglier-garou", challenge: "CR 4", description: "Humanoïde moyen neutre mauvais", category: "Lycanthropes" },
-  { name: "Ours-garou", challenge: "CR 5", description: "Humanoïde moyen neutre", category: "Lycanthropes" },
-
-  // Géants et grandes créatures
-  { name: "Ogre", challenge: "CR 2", description: "Grand géant chaotique mauvais", category: "Géants" },
-  { name: "Troll", challenge: "CR 5", description: "Grand géant chaotique mauvais", category: "Géants" },
-  { name: "Minotaure", challenge: "CR 3", description: "Grande monstruosité chaotique mauvais", category: "Géants" },
-  { name: "Géant des collines", challenge: "CR 5", description: "Géant énorme chaotique mauvais", category: "Géants" },
-  { name: "Ettin", challenge: "CR 4", description: "Grand géant chaotique mauvais", category: "Géants" },
-
-  // Démons et diables
-  { name: "Diablotin", challenge: "CR 1", description: "Petit fiélon loyal mauvais", category: "Fiélons" },
-  { name: "Quasit", challenge: "CR 1", description: "Petit fiélon chaotique mauvais", category: "Fiélons" },
-  { name: "Barghest", challenge: "CR 4", description: "Grande fiélon neutre mauvaise", category: "Fiélons" },
-  { name: "Succube", challenge: "CR 4", description: "Fiélon moyen neutre mauvais", category: "Fiélons" },
-
-  // Dragons et drakes
-  { name: "Pseudodragon", challenge: "CR 1/4", description: "Petit dragon neutre bon", category: "Dragons" },
-  { name: "Drake de garde", challenge: "CR 2", description: "Dragon moyen non aligné", category: "Dragons" },
-  { name: "Wyverne", challenge: "CR 6", description: "Grand dragon non aligné", category: "Dragons" },
-
-  // Élémentaires
-  { name: "Élémentaire du feu", challenge: "CR 5", description: "Grand élémentaire neutre", category: "Élémentaires" },
-  { name: "Élémentaire de l'eau", challenge: "CR 5", description: "Grand élémentaire neutre", category: "Élémentaires" },
-  { name: "Élémentaire de l'air", challenge: "CR 5", description: "Grand élémentaire neutre", category: "Élémentaires" },
-  { name: "Élémentaire de terre", challenge: "CR 5", description: "Grand élémentaire neutre", category: "Élémentaires" },
-
-  // Aberrations
-  { name: "Bulezau", challenge: "CR 3", description: "Fiélon moyen chaotique mauvais", category: "Aberrations" },
-  { name: "Chuul", challenge: "CR 4", description: "Grande aberration chaotique mauvaise", category: "Aberrations" },
-  { name: "Otyugh", challenge: "CR 5", description: "Grande aberration neutre", category: "Aberrations" },
-
-  // Constructs
-  { name: "Golem de chair", challenge: "CR 5", description: "Construct moyen neutre", category: "Constructs" },
-  { name: "Automate", challenge: "CR 1", description: "Construct moyen non aligné", category: "Constructs" },
-  { name: "Garde animé", challenge: "CR 2", description: "Construct moyen non aligné", category: "Constructs" }
-]
 
 export default function HomePage() {
   const router = useRouter()
@@ -97,7 +32,8 @@ export default function HomePage() {
   const [showNewCharacterDialog, setShowNewCharacterDialog] = useState(false)
   const [showEditCharacterDialog, setShowEditCharacterDialog] = useState(false)
   const [showGenerateEnemiesDialog, setShowGenerateEnemiesDialog] = useState(false)
-  const [selectedEnemies, setSelectedEnemies] = useState<Set<number>>(new Set())
+  // Utiliser une clé stable pour la sélection (nom+catégorie+challenge)
+  const [selectedEnemies, setSelectedEnemies] = useState<Set<string>>(new Set())
   const [showDeleteCharactersDialog, setShowDeleteCharactersDialog] = useState(false)
   const [selectedCharactersToDelete, setSelectedCharactersToDelete] = useState<Set<string>>(new Set())
   const [duplicateWarning, setDuplicateWarning] = useState<string>("")
@@ -107,9 +43,38 @@ export default function HomePage() {
   const [newCharacterType, setNewCharacterType] = useState<"player" | "ally" | "enemy">("player")
   const [newCharacterImageUrl, setNewCharacterImageUrl] = useState("")
 
+  // Liste dynamique des monstres du Monster Manual (API 5etools)
+  const [apiEnemies, setApiEnemies] = useState<any[]>([]);
+  const [apiEnemiesLoading, setApiEnemiesLoading] = useState(false);
+  const [apiEnemiesError, setApiEnemiesError] = useState<string | null>(null);
+
   useEffect(() => {
     setData(loadAppData())
   }, [])
+
+  // Charger les monstres à l'ouverture de la modale
+  useEffect(() => {
+    if (!showGenerateEnemiesDialog) return;
+    setApiEnemiesLoading(true);
+    setApiEnemiesError(null);
+    fetch('https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/main/data/bestiary/bestiary-mm.json')
+      .then(res => {
+        if (!res.ok) throw new Error('Erreur lors de la récupération des monstres');
+        return res.json();
+      })
+      .then(data => {
+        // On ne garde que les champs utiles pour la génération, et on force category à être une string
+        const monsters = data.monster.map((m: any) => ({
+          name: m.name,
+          challenge: typeof m.cr === 'object' ? m.cr.cr || m.cr[0]?.cr || '?' : m.cr,
+          description: (typeof m.type === 'object' && m.type !== null ? m.type.type : m.type) + (m.size ? ` ${m.size}` : ''),
+          category: typeof m.type === 'object' && m.type !== null ? m.type.type : (m.type || 'Autre'),
+        }));
+        setApiEnemies(monsters);
+      })
+      .catch(e => setApiEnemiesError(e.message || 'Erreur inconnue'))
+      .finally(() => setApiEnemiesLoading(false));
+  }, [showGenerateEnemiesDialog]);
 
   // Fonction utilitaire pour vérifier les doublons
   const checkForDuplicate = (name: string, type: "player" | "ally" | "enemy") => {
@@ -292,61 +257,55 @@ export default function HomePage() {
   }
 
   const generateBasicEnemies = () => {
-    const selectedEnemiesArray = Array.from(selectedEnemies).map(index => basicDnDEnemies[index])
-
-    const newEnemies: Character[] = []
-    const updatedCharacters = [...data.characters]
-
-    selectedEnemiesArray.forEach((enemy, index) => {
-      // Vérifier si un personnage avec le même nom et type existe déjà
+    // Utiliser la clé stable pour retrouver les ennemis sélectionnés
+    const selectedEnemiesArray = Array.from(selectedEnemies)
+      .map(key => apiEnemies.find(enemy => `${enemy.name}-${enemy.category}-${enemy.challenge}` === key))
+      .filter(Boolean);
+    const updatedCharacters = [...data.characters];
+    selectedEnemiesArray.forEach((enemy, idx) => {
+      if (!enemy) return;
       const existingCharacterIndex = updatedCharacters.findIndex(
         char => char.name === enemy.name && char.type === "enemy"
-      )
-
+      );
       const characterData: Character = {
-        id: existingCharacterIndex >= 0 ? updatedCharacters[existingCharacterIndex].id : `enemy_${Date.now()}_${index}`,
+        id: existingCharacterIndex >= 0 ? updatedCharacters[existingCharacterIndex].id : `enemy_${enemy.name.replace(/\s/g, '_')}_${enemy.category.replace(/\s/g, '_')}`,
         name: enemy.name,
         type: "enemy" as const,
         imageUrl: "",
-      }
-
+      };
       if (existingCharacterIndex >= 0) {
-        // Mettre à jour le personnage existant
-        updatedCharacters[existingCharacterIndex] = characterData
+        updatedCharacters[existingCharacterIndex] = characterData;
       } else {
-        // Ajouter nouveau personnage
-        updatedCharacters.push(characterData)
+        updatedCharacters.push(characterData);
       }
-    })
-
+    });
     const updatedData = {
       ...data,
       characters: updatedCharacters,
-    }
+    };
+    setData(updatedData);
+    saveAppData(updatedData);
+    setShowGenerateEnemiesDialog(false);
+    setSelectedEnemies(new Set());
+  };
 
-    setData(updatedData)
-    saveAppData(updatedData)
-    setShowGenerateEnemiesDialog(false)
-    setSelectedEnemies(new Set()) // Réinitialiser la sélection
-  }
-
-  const toggleEnemySelection = (index: number) => {
-    const newSelected = new Set(selectedEnemies)
-    if (newSelected.has(index)) {
-      newSelected.delete(index)
+  const toggleEnemySelection = (key: string) => {
+    const newSelected = new Set(selectedEnemies);
+    if (newSelected.has(key)) {
+      newSelected.delete(key);
     } else {
-      newSelected.add(index)
+      newSelected.add(key);
     }
-    setSelectedEnemies(newSelected)
-  }
+    setSelectedEnemies(newSelected);
+  };
 
   const selectAllEnemies = () => {
-    setSelectedEnemies(new Set(Array.from({ length: basicDnDEnemies.length }, (_, i) => i)))
-  }
+    setSelectedEnemies(new Set(apiEnemies.map(enemy => `${enemy.name}-${enemy.category}-${enemy.challenge}`)));
+  };
 
   const deselectAllEnemies = () => {
-    setSelectedEnemies(new Set())
-  }
+    setSelectedEnemies(new Set());
+  };
 
   const toggleCharacterSelection = (characterId: string) => {
     const newSelected = new Set(selectedCharactersToDelete)
@@ -486,8 +445,8 @@ export default function HomePage() {
               <div className="flex items-center gap-2">
                 <Button variant="outline" onClick={() => {
                   // Présélectionner tous les ennemis la première fois
-                  if (selectedEnemies.size === 0) {
-                    setSelectedEnemies(new Set(Array.from({ length: basicDnDEnemies.length }, (_, i) => i)))
+                  if (selectedEnemies.size === 0 && apiEnemies.length > 0) {
+                    setSelectedEnemies(new Set(Array.from({ length: apiEnemies.length }, (_, i) => i)))
                   }
                   setShowGenerateEnemiesDialog(true)
                 }}>
@@ -869,91 +828,105 @@ export default function HomePage() {
           <DialogHeader>
             <DialogTitle>Generate D&D Enemies</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-gray-600">
-                Select the enemies you want to add to your collection ({selectedEnemies.size} selected):
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={selectAllEnemies}>
-                  Select All
+          <ClientOnly>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-gray-600">
+                  Select the enemies you want to add to your collection ({selectedEnemies.size} selected):
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={selectAllEnemies}>
+                    Select All
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={deselectAllEnemies}>
+                    Deselect All
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {/* Grouper les ennemis par catégorie depuis l'API */}
+                {apiEnemiesLoading && <div className="text-center py-4">Chargement des monstres...</div>}
+                {apiEnemiesError && <div className="text-red-500 text-center py-4">{apiEnemiesError}</div>}
+                {!apiEnemiesLoading && !apiEnemiesError && apiEnemies.length > 0 && (
+                  // On extrait toutes les catégories, en prenant category.type si c'est un objet
+                  Array.from(new Set(apiEnemies.map(enemy => typeof enemy.category === 'object' && enemy.category !== null ? enemy.category.type : enemy.category))).map(categoryValue => {
+                    const displayCategory = categoryValue || 'Autre';
+                    return (
+                      <div key={displayCategory} className="space-y-2">
+                        <h3 className="font-medium text-sm text-gray-700 border-b pb-1">{displayCategory}</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {apiEnemies
+                            .filter(enemy => {
+                              const cat = typeof enemy.category === 'object' && enemy.category !== null ? enemy.category.type : enemy.category;
+                              return cat === categoryValue;
+                            })
+                            .map((enemy) => {
+                              const cat = typeof enemy.category === 'object' && enemy.category !== null ? enemy.category.type : enemy.category;
+                              const uniqueKey = `${enemy.name}-${cat}-${String(enemy.challenge)}`;
+                              const isSelected = selectedEnemies.has(uniqueKey);
+                              console.log(`Rendering enemy: ${enemy.name}, key: ${uniqueKey}, description: ${enemy.description}`);
+                              const existingCharacter = data.characters.find(
+                                char => char.name === enemy.name && char.type === "enemy"
+                              );
+                              return (
+                                <div
+                                  key={uniqueKey}
+                                  className={`flex items-center p-2 rounded-md border cursor-pointer transition-all ${isSelected
+                                    ? 'bg-blue-50 border-blue-200'
+                                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                                    }`}
+                                  onClick={() => toggleEnemySelection(uniqueKey)}
+                                >
+                                  <div className="mr-3">
+                                    {isSelected ? (
+                                      <CheckSquare className="w-4 h-4 text-blue-600" />
+                                    ) : (
+                                      <Square className="w-4 h-4 text-gray-400" />
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between">
+                                      <span className={`font-medium text-sm ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                                        {enemy.name}
+                                        {existingCharacter && (
+                                          <span className="ml-2 text-xs bg-orange-100 text-orange-600 px-1 py-0.5 rounded">
+                                            Update
+                                          </span>
+                                        )}
+                                      </span>
+                                      <span className={`text-xs ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}>
+                                        {enemy.challenge}
+                                      </span>
+                                    </div>
+                                    <p className={`text-xs mt-1 ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
+                                      {enemy.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => setShowGenerateEnemiesDialog(false)}>
+                  Cancel
                 </Button>
-                <Button variant="outline" size="sm" onClick={deselectAllEnemies}>
-                  Deselect All
+                <Button
+                  onClick={generateBasicEnemies}
+                  disabled={selectedEnemies.size === 0}
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Generate {selectedEnemies.size} Enemies
                 </Button>
               </div>
             </div>
-
-            <div className="space-y-6">
-              {/* Grouper les ennemis par catégorie */}
-              {Array.from(new Set(basicDnDEnemies.map(enemy => enemy.category))).map(category => (
-                <div key={category} className="space-y-2">
-                  <h3 className="font-medium text-sm text-gray-700 border-b pb-1">{category}</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {basicDnDEnemies
-                      .map((enemy, index) => ({ enemy, index }))
-                      .filter(({ enemy }) => enemy.category === category)
-                      .map(({ enemy, index }) => {
-                        const isSelected = selectedEnemies.has(index)
-                        const existingCharacter = data.characters.find(
-                          char => char.name === enemy.name && char.type === "enemy"
-                        )
-
-                        return (
-                          <div
-                            key={index}
-                            className={`flex items-center p-2 rounded-md border cursor-pointer transition-all ${isSelected
-                              ? 'bg-blue-50 border-blue-200'
-                              : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                              }`}
-                            onClick={() => toggleEnemySelection(index)}
-                          >
-                            <div className="mr-3">
-                              {isSelected ? (
-                                <CheckSquare className="w-4 h-4 text-blue-600" />
-                              ) : (
-                                <Square className="w-4 h-4 text-gray-400" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between">
-                                <span className={`font-medium text-sm ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
-                                  {enemy.name}
-                                  {existingCharacter && (
-                                    <span className="ml-2 text-xs bg-orange-100 text-orange-600 px-1 py-0.5 rounded">
-                                      Update
-                                    </span>
-                                  )}
-                                </span>
-                                <span className={`text-xs ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}>
-                                  {enemy.challenge}
-                                </span>
-                              </div>
-                              <p className={`text-xs mt-1 ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
-                                {enemy.description}
-                              </p>
-                            </div>
-                          </div>
-                        )
-                      })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setShowGenerateEnemiesDialog(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={generateBasicEnemies}
-                disabled={selectedEnemies.size === 0}
-              >
-                <Zap className="w-4 h-4 mr-2" />
-                Generate {selectedEnemies.size} Enemies
-              </Button>
-            </div>
-          </div>
+          </ClientOnly>
         </DialogContent>
       </Dialog>
 
