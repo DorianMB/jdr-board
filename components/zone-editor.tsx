@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch"
 import { loadAppData, saveAppData } from "@/lib/storage"
 import type { Character, Drawing, HistoryState, Token, Zone } from "@/lib/types"
 import { getTokenDisplayName, getTokenNumber } from "@/lib/types"
+import { useLanguage } from "@/hooks/use-language"
 import {
   Brush,
   Check,
@@ -54,6 +55,8 @@ interface ZoneEditorProps {
 }
 
 export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorProps) {
+  const { t } = useLanguage()
+
   // Ensure zone is properly initialized with defaults
   const [zone, setZone] = useState<Zone>(() => ({
     id: initialZone?.id || "",
@@ -780,14 +783,14 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
       <AlertDialog open={showExitConfirmation} onOpenChange={setShowExitConfirmation}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogTitle>{t('unsavedChanges')}</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes in this zone. Would you like to save before leaving?
+              {t('unsavedChangesMessage')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelExit}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmExit}>Save & Exit</AlertDialogAction>
+            <AlertDialogCancel onClick={cancelExit}>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmExit}>{t('save')} & {t('exit')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -885,7 +888,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
       }}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>{showCreateCharacter ? "Create New Character" : "Add Token"}</DialogTitle>
+            <DialogTitle>{showCreateCharacter ? t('createNewCharacter') : t('addToken')}</DialogTitle>
           </DialogHeader>
 
           {showCreateCharacter ? (
@@ -898,17 +901,17 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
               {/* Search and Filter Controls */}
               <div className="space-y-3 border-b pb-4">
                 <div>
-                  <Label htmlFor="character-search">Search Characters</Label>
+                  <Label htmlFor="character-search">{t('searchCharacters')}</Label>
                   <Input
                     id="character-search"
                     value={characterSearchTerm}
                     onChange={(e) => setCharacterSearchTerm(e.target.value)}
-                    placeholder="Search by character name..."
+                    placeholder={t('searchByCharacterName')}
                     className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label>Filter by Type</Label>
+                  <Label>{t('filterByType')}</Label>
                   <div className="flex gap-2 mt-1 flex-wrap">
                     <Button
                       variant={characterTypeFilter === "all" ? "default" : "outline"}
@@ -916,7 +919,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                       onClick={() => setCharacterTypeFilter("all")}
                       className="text-xs"
                     >
-                      Tous
+                      {t('all')}
                     </Button>
                     <Button
                       variant={characterTypeFilter === "player" ? "default" : "outline"}
@@ -929,7 +932,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                         color: characterTypeFilter === "player" ? "white" : "#059669"
                       }}
                     >
-                      Joueurs
+                      {t('player')}
                     </Button>
                     <Button
                       variant={characterTypeFilter === "ally" ? "default" : "outline"}
@@ -942,7 +945,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                         color: characterTypeFilter === "ally" ? "white" : "#2563eb"
                       }}
                     >
-                      Alliés
+                      {t('ally')}
                     </Button>
                     <Button
                       variant={characterTypeFilter === "enemy" ? "default" : "outline"}
@@ -955,7 +958,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                         color: characterTypeFilter === "enemy" ? "white" : "#dc2626"
                       }}
                     >
-                      Ennemis
+                      {t('enemy')}
                     </Button>
                   </div>
                 </div>
@@ -964,7 +967,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
               {/* Character Selection */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Select Character ({filteredCharacters.length} found)</Label>
+                  <Label>{t('selectCharacter')} ({filteredCharacters.length} {t('found')})</Label>
                   <Button
                     variant="outline"
                     size="sm"
@@ -972,7 +975,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                     className="flex items-center gap-1"
                   >
                     <Plus className="w-4 h-4" />
-                    Create New
+                    {t('createNew')}
                   </Button>
                 </div>
                 {filteredCharacters.length === 0 ? (
@@ -1035,8 +1038,8 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                         <div className="flex-1">
                           <div className="font-medium text-sm">{character.name}</div>
                           <div className="text-xs text-gray-500 capitalize">
-                            {character.type === "player" ? "Joueur" :
-                              character.type === "ally" ? "Allié" : "Ennemi"}
+                            {character.type === "player" ? t('player') :
+                              character.type === "ally" ? t('ally') : t('enemy')}
                           </div>
                         </div>
                       </div>
@@ -1056,10 +1059,10 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                 setSelectedCharacter("")
                 setShowCreateCharacter(false)
               }}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button onClick={addToken} disabled={!selectedCharacter}>
-                Add Token
+                {t('addToken')}
               </Button>
             </div>
           )}
@@ -1116,9 +1119,9 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                           {displayName}
                         </h3>
                         <p className="text-xs text-gray-500 capitalize">
-                          {character.type === "player" ? "Joueur" :
-                            character.type === "ally" ? "Allié" : "Ennemi"} • {tokensCount} token{tokensCount !== 1 ? "s" : ""} of this type
-                          {isDead && " • DEAD"}
+                          {character.type === "player" ? t('player') :
+                            character.type === "ally" ? t('ally') : t('enemy')} • {tokensCount} {t('tokens')}
+                          {isDead && ` • ${t('dead')}`}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <Label htmlFor={`dead-${token.id}`} className="text-xs">
@@ -1147,7 +1150,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                 <div className="text-center text-gray-500 py-8">
                   No characters on the board yet.
                   <br />
-                  Add tokens to see them here.
+                  {t('addTokensMessage')}
                 </div>
               )}
             </div>
@@ -1163,7 +1166,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
           className="fixed left-4 top-20 z-50 bg-white hover:text-white hover:bg-black"
           onClick={() => setShowCharacterMenu(true)}
         >
-          Characters ({charactersOnBoard.length})
+          {t('characters')} ({charactersOnBoard.length})
         </Button>
       )}
 

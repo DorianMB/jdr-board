@@ -12,6 +12,8 @@ import type { AppData, Character, Zone } from "@/lib/types"
 import { Download, Edit, Map, Plus, Trash2, Upload, Users, Zap, CheckSquare, Square } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { useLanguage } from "@/hooks/use-language"
+import { LanguageToggle } from "@/components/language-toggle"
 
 // Liste étendue des ennemis de D&D
 const basicDnDEnemies = [
@@ -89,6 +91,7 @@ const basicDnDEnemies = [
 
 export default function HomePage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [data, setData] = useState<AppData>({ zones: [], characters: [] })
   const [showNewZoneDialog, setShowNewZoneDialog] = useState(false)
   const [showNewCharacterDialog, setShowNewCharacterDialog] = useState(false)
@@ -117,7 +120,10 @@ export default function HomePage() {
   const updateDuplicateWarning = (name: string, type: "player" | "ally" | "enemy") => {
     const existing = checkForDuplicate(name.trim(), type)
     if (existing && name.trim()) {
-      setDuplicateWarning(`Un personnage "${name}" de type "${type === "player" ? "Joueur" : type === "ally" ? "Allié" : "Ennemi"}" existe déjà et sera mis à jour.`)
+      setDuplicateWarning(t('duplicateWarning', {
+        name,
+        type: t(type as any)
+      }))
     } else {
       setDuplicateWarning("")
     }
@@ -127,7 +133,10 @@ export default function HomePage() {
   const updateDuplicateWarningForEdit = (name: string, type: "player" | "ally" | "enemy", excludeId: string) => {
     const existing = data.characters.find(char => char.name === name.trim() && char.type === type && char.id !== excludeId)
     if (existing && name.trim()) {
-      setDuplicateWarning(`Un personnage "${name}" de type "${type === "player" ? "Joueur" : type === "ally" ? "Allié" : "Ennemi"}" existe déjà et sera fusionné.`)
+      setDuplicateWarning(t('duplicateWarningMerge', {
+        name,
+        type: t(type as any)
+      }))
     } else {
       setDuplicateWarning("")
     }
@@ -383,17 +392,17 @@ export default function HomePage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">JDR Board</h1>
-            <p className="text-gray-600 mt-2">Manage your RPG zones and characters</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
+            <p className="text-gray-600 mt-2">{t('subtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={exportData}>
               <Download className="w-4 h-4 mr-2" />
-              Export
+              {t('export')}
             </Button>
             <Button variant="outline" onClick={() => document.getElementById("import-file")?.click()}>
               <Upload className="w-4 h-4 mr-2" />
-              Import
+              {t('import')}
             </Button>
             <input id="import-file" type="file" accept=".json" onChange={handleImport} className="hidden" />
           </div>
@@ -402,16 +411,16 @@ export default function HomePage() {
         {/* Main Content */}
         <Tabs defaultValue="zones" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="zones">Zones</TabsTrigger>
-            <TabsTrigger value="characters">Characters</TabsTrigger>
+            <TabsTrigger value="zones">{t('zones')}</TabsTrigger>
+            <TabsTrigger value="characters">{t('characters')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="zones" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Combat Zones</h2>
+              <h2 className="text-xl font-semibold">{t('zones')}</h2>
               <Button onClick={() => setShowNewZoneDialog(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                New Zone
+                {t('newZone')}
               </Button>
             </div>
 
@@ -419,13 +428,13 @@ export default function HomePage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Map className="w-12 h-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No zones yet</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">{t('noZones')}</h3>
                   <p className="text-gray-500 text-center mb-4">
                     Create your first combat zone to get started with your tabletop sessions.
                   </p>
                   <Button onClick={() => setShowNewZoneDialog(true)}>
                     <Plus className="w-4 h-4 mr-2" />
-                    Create Zone
+                    {t('createZone')}
                   </Button>
                 </CardContent>
               </Card>
@@ -448,7 +457,7 @@ export default function HomePage() {
                         </Button>
                       </div>
                       <CardDescription>
-                        {zone.tokens.length} tokens • {zone.drawings.length} drawings
+                        {zone.tokens.length} {t('tokens')} • {zone.drawings.length} drawings
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -458,10 +467,10 @@ export default function HomePage() {
                           className="flex-1 bg-transparent"
                           onClick={() => router.push(`/zone/${zone.id}`)}
                         >
-                          View
+                          {t('openZone')}
                         </Button>
                         <Button className="flex-1" onClick={() => router.push(`/zone/${zone.id}?edit=true`)}>
-                          Edit
+                          {t('edit')}
                         </Button>
                       </div>
                     </CardContent>
@@ -473,7 +482,7 @@ export default function HomePage() {
 
           <TabsContent value="characters" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Characters</h2>
+              <h2 className="text-xl font-semibold">{t('characters')}</h2>
               <div className="flex items-center gap-2">
                 <Button variant="outline" onClick={() => {
                   // Présélectionner tous les ennemis la première fois
@@ -483,7 +492,7 @@ export default function HomePage() {
                   setShowGenerateEnemiesDialog(true)
                 }}>
                   <Zap className="w-4 h-4 mr-2" />
-                  Generate D&D Enemies
+                  {t('generateEnemies')}
                 </Button>
                 {data.characters.length > 0 && (
                   <Button
@@ -495,7 +504,7 @@ export default function HomePage() {
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Multiple
+                    {t('deleteSelected')}
                   </Button>
                 )}
                 <Button onClick={() => {
@@ -506,7 +515,7 @@ export default function HomePage() {
                   setShowNewCharacterDialog(true)
                 }}>
                   <Plus className="w-4 h-4 mr-2" />
-                  New Character
+                  {t('newCharacter')}
                 </Button>
               </div>
             </div>
@@ -515,7 +524,7 @@ export default function HomePage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Users className="w-12 h-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No characters yet</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">{t('noCharacters')}</h3>
                   <p className="text-gray-500 text-center mb-4">
                     Create characters to use as tokens in your combat zones.
                   </p>
@@ -527,7 +536,7 @@ export default function HomePage() {
                     setShowNewCharacterDialog(true)
                   }}>
                     <Plus className="w-4 h-4 mr-2" />
-                    Create Character
+                    {t('createCharacter')}
                   </Button>
                 </CardContent>
               </Card>
@@ -538,7 +547,7 @@ export default function HomePage() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                      <h3 className="text-lg font-semibold text-green-700">Players</h3>
+                      <h3 className="text-lg font-semibold text-green-700">{t('player')}</h3>
                       <div className="flex-1 h-px bg-green-200"></div>
                       <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded-full">
                         {data.characters.filter(c => c.type === "player").length}
@@ -563,7 +572,7 @@ export default function HomePage() {
                                 </div>
                                 <div>
                                   <CardTitle className="text-base font-medium">{character.name}</CardTitle>
-                                  <CardDescription className="text-xs text-green-600 font-medium">Joueur</CardDescription>
+                                  <CardDescription className="text-xs text-green-600 font-medium">{t('player')}</CardDescription>
                                 </div>
                               </div>
                               <div className="flex items-center gap-1">
@@ -587,7 +596,7 @@ export default function HomePage() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                      <h3 className="text-lg font-semibold text-blue-700">Alliés</h3>
+                      <h3 className="text-lg font-semibold text-blue-700">{t('ally')}</h3>
                       <div className="flex-1 h-px bg-blue-200"></div>
                       <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
                         {data.characters.filter(c => c.type === "ally").length}
@@ -612,7 +621,7 @@ export default function HomePage() {
                                 </div>
                                 <div>
                                   <CardTitle className="text-base font-medium">{character.name}</CardTitle>
-                                  <CardDescription className="text-xs text-blue-600 font-medium">Allié</CardDescription>
+                                  <CardDescription className="text-xs text-blue-600 font-medium">{t('ally')}</CardDescription>
                                 </div>
                               </div>
                               <div className="flex items-center gap-1">
@@ -661,7 +670,7 @@ export default function HomePage() {
                                 </div>
                                 <div>
                                   <CardTitle className="text-base font-medium">{character.name}</CardTitle>
-                                  <CardDescription className="text-xs text-red-600 font-medium">Ennemi</CardDescription>
+                                  <CardDescription className="text-xs text-red-600 font-medium">{t('enemy')}</CardDescription>
                                 </div>
                               </div>
                               <div className="flex items-center gap-1">
@@ -689,25 +698,25 @@ export default function HomePage() {
       <Dialog open={showNewZoneDialog} onOpenChange={setShowNewZoneDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Zone</DialogTitle>
+            <DialogTitle>{t('createZone')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="zone-name">Zone Name</Label>
+              <Label htmlFor="zone-name">{t('zoneName')}</Label>
               <Input
                 id="zone-name"
                 value={newZoneName}
                 onChange={(e) => setNewZoneName(e.target.value)}
-                placeholder="Enter zone name"
+                placeholder={t('zoneName')}
                 onKeyDown={(e) => e.key === "Enter" && createZone()}
               />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowNewZoneDialog(false)}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button onClick={createZone} disabled={!newZoneName.trim()}>
-                Create Zone
+                {t('createZone')}
               </Button>
             </div>
           </div>
@@ -718,11 +727,11 @@ export default function HomePage() {
       <Dialog open={showNewCharacterDialog} onOpenChange={setShowNewCharacterDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Character</DialogTitle>
+            <DialogTitle>{t('createCharacter')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="character-name">Character Name</Label>
+              <Label htmlFor="character-name">{t('characterName')}</Label>
               <Input
                 id="character-name"
                 value={newCharacterName}
@@ -730,11 +739,11 @@ export default function HomePage() {
                   setNewCharacterName(e.target.value)
                   updateDuplicateWarning(e.target.value, newCharacterType)
                 }}
-                placeholder="Enter character name"
+                placeholder={t('characterName')}
               />
             </div>
             <div>
-              <Label htmlFor="character-type">Character Type</Label>
+              <Label htmlFor="character-type">{t('characterType')}</Label>
               <Select
                 value={newCharacterType}
                 onValueChange={(value: "player" | "ally" | "enemy") => {
@@ -746,9 +755,9 @@ export default function HomePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="player">Joueur</SelectItem>
-                  <SelectItem value="ally">Allié</SelectItem>
-                  <SelectItem value="enemy">Ennemi</SelectItem>
+                  <SelectItem value="player">{t('player')}</SelectItem>
+                  <SelectItem value="ally">{t('ally')}</SelectItem>
+                  <SelectItem value="enemy">{t('enemy')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -758,7 +767,7 @@ export default function HomePage() {
               </div>
             )}
             <div>
-              <Label htmlFor="character-image">Image URL (optional)</Label>
+              <Label htmlFor="character-image">{t('imageUrl')}</Label>
               <Input
                 id="character-image"
                 value={newCharacterImageUrl}
@@ -771,10 +780,10 @@ export default function HomePage() {
                 setShowNewCharacterDialog(false)
                 setDuplicateWarning("")
               }}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button onClick={createCharacter} disabled={!newCharacterName.trim()}>
-                {checkForDuplicate(newCharacterName.trim(), newCharacterType) ? "Update Character" : "Create Character"}
+                {checkForDuplicate(newCharacterName.trim(), newCharacterType) ? t('update') : t('create')}
               </Button>
             </div>
           </div>
@@ -785,7 +794,7 @@ export default function HomePage() {
       <Dialog open={showEditCharacterDialog} onOpenChange={setShowEditCharacterDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Character</DialogTitle>
+            <DialogTitle>{t('editCharacter')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -1061,6 +1070,9 @@ export default function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Language Toggle Button */}
+      <LanguageToggle />
     </div>
   )
 }
