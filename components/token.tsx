@@ -88,7 +88,9 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
         cursor: isEditMode ? (isDragging ? "grabbing" : "grab") : "default",
       }}
       onMouseDown={handleMouseDown}
-      title={`${character.name}${tokenNumber ? ` (${tokenNumber})` : ""} (${character.type})`}
+      title={`${character.name}${tokenNumber ? ` (${tokenNumber})` : ""} (${character.type === "player" ? "Joueur" :
+          character.type === "ally" ? "Allié" : "Ennemi"
+        })`}
     >
       <div className="relative w-full h-full">
         {character.imageUrl ? (

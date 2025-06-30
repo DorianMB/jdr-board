@@ -746,9 +746,9 @@ export default function HomePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="player">Player</SelectItem>
-                  <SelectItem value="ally">Ally</SelectItem>
-                  <SelectItem value="enemy">Enemy</SelectItem>
+                  <SelectItem value="player">Joueur</SelectItem>
+                  <SelectItem value="ally">Allié</SelectItem>
+                  <SelectItem value="enemy">Ennemi</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -817,9 +817,9 @@ export default function HomePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="player">Player</SelectItem>
-                  <SelectItem value="ally">Ally</SelectItem>
-                  <SelectItem value="enemy">Enemy</SelectItem>
+                  <SelectItem value="player">Joueur</SelectItem>
+                  <SelectItem value="ally">Allié</SelectItem>
+                  <SelectItem value="enemy">Ennemi</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1021,7 +1021,7 @@ export default function HomePage() {
                                 />
                               ) : (
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${character.type === "player" ? "bg-green-500" :
-                                    character.type === "ally" ? "bg-blue-500" : "bg-red-500"
+                                  character.type === "ally" ? "bg-blue-500" : "bg-red-500"
                                   }`}>
                                   {character.name.charAt(0).toUpperCase()}
                                 </div>

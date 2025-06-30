@@ -909,17 +909,55 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                 </div>
                 <div>
                   <Label>Filter by Type</Label>
-                  <Select value={characterTypeFilter} onValueChange={(value: "all" | "player" | "ally" | "enemy") => setCharacterTypeFilter(value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="player">Player</SelectItem>
-                      <SelectItem value="ally">Ally</SelectItem>
-                      <SelectItem value="enemy">Enemy</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex gap-2 mt-1 flex-wrap">
+                    <Button
+                      variant={characterTypeFilter === "all" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCharacterTypeFilter("all")}
+                      className="text-xs"
+                    >
+                      Tous
+                    </Button>
+                    <Button
+                      variant={characterTypeFilter === "player" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCharacterTypeFilter("player")}
+                      className="text-xs bg-green-600 hover:bg-green-700 text-white"
+                      style={{
+                        backgroundColor: characterTypeFilter === "player" ? "#059669" : "transparent",
+                        borderColor: "#059669",
+                        color: characterTypeFilter === "player" ? "white" : "#059669"
+                      }}
+                    >
+                      Joueurs
+                    </Button>
+                    <Button
+                      variant={characterTypeFilter === "ally" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCharacterTypeFilter("ally")}
+                      className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                      style={{
+                        backgroundColor: characterTypeFilter === "ally" ? "#2563eb" : "transparent",
+                        borderColor: "#2563eb",
+                        color: characterTypeFilter === "ally" ? "white" : "#2563eb"
+                      }}
+                    >
+                      Alliés
+                    </Button>
+                    <Button
+                      variant={characterTypeFilter === "enemy" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCharacterTypeFilter("enemy")}
+                      className="text-xs bg-red-600 hover:bg-red-700 text-white"
+                      style={{
+                        backgroundColor: characterTypeFilter === "enemy" ? "#dc2626" : "transparent",
+                        borderColor: "#dc2626",
+                        color: characterTypeFilter === "enemy" ? "white" : "#dc2626"
+                      }}
+                    >
+                      Ennemis
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -996,7 +1034,10 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                         </div>
                         <div className="flex-1">
                           <div className="font-medium text-sm">{character.name}</div>
-                          <div className="text-xs text-gray-500 capitalize">{character.type}</div>
+                          <div className="text-xs text-gray-500 capitalize">
+                            {character.type === "player" ? "Joueur" :
+                              character.type === "ally" ? "Allié" : "Ennemi"}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1075,7 +1116,8 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                           {displayName}
                         </h3>
                         <p className="text-xs text-gray-500 capitalize">
-                          {character.type} • {tokensCount} token{tokensCount !== 1 ? "s" : ""} of this type
+                          {character.type === "player" ? "Joueur" :
+                            character.type === "ally" ? "Allié" : "Ennemi"} • {tokensCount} token{tokensCount !== 1 ? "s" : ""} of this type
                           {isDead && " • DEAD"}
                         </p>
                         <div className="flex items-center gap-2 mt-1">

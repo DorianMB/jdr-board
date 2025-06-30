@@ -69,9 +69,9 @@ export default function CreateCharacterForm({ onCharacterCreated, onCancel }: Cr
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="player">Player</SelectItem>
-                        <SelectItem value="ally">Ally</SelectItem>
-                        <SelectItem value="enemy">Enemy</SelectItem>
+                        <SelectItem value="player">Joueur</SelectItem>
+                        <SelectItem value="ally">Allié</SelectItem>
+                        <SelectItem value="enemy">Ennemi</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -92,10 +92,10 @@ export default function CreateCharacterForm({ onCharacterCreated, onCancel }: Cr
                         <div className="flex items-center gap-2">
                             <div
                                 className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-white font-bold text-sm ${type === "player"
-                                        ? "border-green-500 bg-green-600"
-                                        : type === "ally"
-                                            ? "border-blue-500 bg-blue-600"
-                                            : "border-red-500 bg-red-600"
+                                    ? "border-green-500 bg-green-600"
+                                    : type === "ally"
+                                        ? "border-blue-500 bg-blue-600"
+                                        : "border-red-500 bg-red-600"
                                     }`}
                             >
                                 <img
@@ -112,7 +112,7 @@ export default function CreateCharacterForm({ onCharacterCreated, onCancel }: Cr
                                 <span className="hidden"></span>
                             </div>
                             <div className="text-sm text-gray-600">
-                                {name || "Character Name"} ({type})
+                                {name || "Character Name"} ({type === "player" ? "Joueur" : type === "ally" ? "Allié" : "Ennemi"})
                             </div>
                         </div>
                     </div>
