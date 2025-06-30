@@ -1,6 +1,7 @@
 "use client"
 
 import type { Character, Token } from "@/lib/types"
+import { getTokenNumber } from "@/lib/types"
 import { useEffect, useRef, useState } from "react"
 
 interface TokenProps {
@@ -10,12 +11,17 @@ interface TokenProps {
   onUpdate: (updates: Partial<Token>) => void
   onDelete: () => void
   isEditMode: boolean
+  allTokens: Token[]
+  allCharacters: Character[]
 }
 
-export default function TokenComponent({ token, character, gridSize, onUpdate, isEditMode }: TokenProps) {
+export default function TokenComponent({ token, character, gridSize, onUpdate, isEditMode, allTokens, allCharacters }: TokenProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const tokenRef = useRef<HTMLDivElement>(null)
+
+  // Calculer le numéro du token s'il y en a plusieurs identiques
+  const tokenNumber = getTokenNumber(allTokens, token, allCharacters)
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!isEditMode) return
@@ -82,20 +88,30 @@ export default function TokenComponent({ token, character, gridSize, onUpdate, i
         cursor: isEditMode ? (isDragging ? "grabbing" : "grab") : "default",
       }}
       onMouseDown={handleMouseDown}
-      title={`${character.name} (${character.type})`}
+      title={`${character.name}${tokenNumber ? ` (${tokenNumber})` : ""} (${character.type})`}
     >
-      {character.imageUrl ? (
-        <img
-          src={character.imageUrl || "/placeholder.svg"}
-          alt={character.name}
-          className="w-full h-full rounded-full object-cover"
-          draggable={false}
-        />
-      ) : (
-        /^[a-zA-Z]/.test(character.name)
-          ? character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
-          : character.name.replace(/\D/g, "")
-      )}
+      <div className="relative w-full h-full">
+        {character.imageUrl ? (
+          <img
+            src={character.imageUrl || "/placeholder.svg"}
+            alt={character.name}
+            className="w-full h-full rounded-full object-cover"
+            draggable={false}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            {/^[a-zA-Z]/.test(character.name)
+              ? character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
+              : character.name.replace(/\D/g, "")}
+          </div>
+        )}
+        {/* Afficher le numéro en petit en bas à droite si nécessaire */}
+        {tokenNumber && (
+          <div className="absolute -bottom-1 -right-1 bg-white border border-gray-300 rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold text-gray-700">
+            {tokenNumber}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -20,6 +20,7 @@ import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { loadAppData, saveAppData } from "@/lib/storage"
 import type { Character, Drawing, HistoryState, Token, Zone } from "@/lib/types"
+import { getTokenDisplayName, getTokenNumber } from "@/lib/types"
 import {
   Brush,
   Check,
@@ -1033,13 +1034,18 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
             </SheetHeader>
             <div className="mt-6 space-y-3">
               {charactersOnBoard.map(({ token, character }) => {
-                const tokensCount = charactersOnBoard.length
+                const tokensCount = charactersOnBoard.filter(item =>
+                  item.character.name === character.name && item.character.type === character.type
+                ).length
                 const isDead = token.isDead || false
+                const tokenNumber = getTokenNumber(zone.tokens || [], token, characters)
+                const displayName = getTokenDisplayName(token, characters, zone.tokens || [])
+
                 return (
                   <div key={token.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-3 flex-1">
                       <div
-                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${character.type === "player"
+                        className={`relative w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${character.type === "player"
                           ? "border-green-500 bg-green-100 text-green-700"
                           : character.type === "ally"
                             ? "border-blue-500 bg-blue-100 text-blue-700"
@@ -1057,13 +1063,19 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                             ? character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
                             : character.name.replace(/\D/g, "")
                         )}
+                        {/* Afficher le numéro en petit en bas à droite si nécessaire */}
+                        {tokenNumber && (
+                          <div className="absolute -bottom-1 -right-1 bg-white border border-gray-300 rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold text-gray-700">
+                            {tokenNumber}
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1">
                         <h3 className={`font-medium text-sm ${isDead ? "line-through text-gray-500" : ""}`}>
-                          {character.name}
+                          {displayName}
                         </h3>
                         <p className="text-xs text-gray-500 capitalize">
-                          {character.type} • {tokensCount} token{tokensCount !== 1 ? "s" : ""}
+                          {character.type} • {tokensCount} token{tokensCount !== 1 ? "s" : ""} of this type
                           {isDead && " • DEAD"}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
@@ -1320,6 +1332,8 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                   onUpdate={(updates) => updateToken(token.id, updates)}
                   onDelete={() => deleteToken(token.id)}
                   isEditMode={editMode && !isPanning}
+                  allTokens={zone.tokens || []}
+                  allCharacters={characters}
                 />
               )
             })}

@@ -50,3 +50,34 @@ export interface HistoryState {
   drawings: Drawing[]
   tokens: Token[]
 }
+
+// Fonction utilitaire pour calculer le numéro des tokens dupliqués
+export function getTokenNumber(tokens: Token[], currentToken: Token, characters: Character[]): number | null {
+  // Récupérer le personnage du token actuel
+  const currentCharacter = characters.find(c => c.id === currentToken.characterId)
+  if (!currentCharacter) return null
+
+  // Filtrer les tokens ayant le même personnage
+  const sameCharacterTokens = tokens.filter(token => {
+    const character = characters.find(c => c.id === token.characterId)
+    return character && character.name === currentCharacter.name && character.type === currentCharacter.type
+  })
+
+  // Si il n'y a qu'un seul token de ce personnage, pas besoin de numéro
+  if (sameCharacterTokens.length <= 1) return null
+
+  // Trier les tokens par ordre de création (id) pour avoir une numérotation cohérente
+  sameCharacterTokens.sort((a, b) => parseInt(a.id) - parseInt(b.id))
+
+  // Retourner la position (index + 1) du token actuel
+  return sameCharacterTokens.findIndex(token => token.id === currentToken.id) + 1
+}
+
+// Fonction utilitaire pour obtenir le nom d'affichage d'un token
+export function getTokenDisplayName(token: Token, characters: Character[], allTokens: Token[]): string {
+  const character = characters.find(c => c.id === token.characterId)
+  if (!character) return "Unknown"
+
+  const tokenNumber = getTokenNumber(allTokens, token, characters)
+  return tokenNumber ? `${character.name} (${tokenNumber})` : character.name
+}
