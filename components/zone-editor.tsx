@@ -28,6 +28,7 @@ import {
   Eraser,
   EyeOff,
   Home,
+  Move,
   Palette,
   Plus,
   RotateCcw,
@@ -93,10 +94,12 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null)
+  const [isNavigationMode, setIsNavigationMode] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const panStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null)
+  const touchStartRef = useRef<{ touches: TouchList; panX: number; panY: number; zoom: number } | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -285,7 +288,30 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
     setShowExitConfirmation(false)
   }
 
-  // Mouse wheel panning and scrolling
+  // Utility functions for touch gestures
+  const getTouchDistance = (touches: TouchList) => {
+    if (touches.length < 2) return 0
+    const touch1 = touches[0]
+    const touch2 = touches[1]
+    return Math.sqrt(
+      Math.pow(touch2.clientX - touch1.clientX, 2) +
+      Math.pow(touch2.clientY - touch1.clientY, 2)
+    )
+  }
+
+  const getTouchCenter = (touches: TouchList) => {
+    if (touches.length === 1) {
+      return { x: touches[0].clientX, y: touches[0].clientY }
+    }
+    const touch1 = touches[0]
+    const touch2 = touches[1]
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2
+    }
+  }
+
+  // Mouse wheel panning and scrolling + Touch events
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
@@ -322,6 +348,91 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
       }
     }
 
+    const handleTouchStart = (e: TouchEvent) => {
+      // Only handle touch events in navigation mode
+      if (!isNavigationMode) return
+
+      e.preventDefault()
+      const touches = e.touches
+
+      if (touches.length === 1) {
+        // Single touch - pan
+        setIsPanning(true)
+        touchStartRef.current = {
+          touches: touches,
+          panX: panOffset.x,
+          panY: panOffset.y,
+          zoom: zoom
+        }
+      } else if (touches.length === 2) {
+        // Two touches - zoom + pan
+        setIsPanning(true)
+        touchStartRef.current = {
+          touches: touches,
+          panX: panOffset.x,
+          panY: panOffset.y,
+          zoom: zoom
+        }
+      }
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isNavigationMode || !touchStartRef.current) return
+
+      e.preventDefault()
+      const touches = e.touches
+
+      if (touches.length === 1 && touchStartRef.current.touches.length === 1) {
+        // Single touch pan
+        const deltaX = touches[0].clientX - touchStartRef.current.touches[0].clientX
+        const deltaY = touches[0].clientY - touchStartRef.current.touches[0].clientY
+
+        setPanOffset({
+          x: touchStartRef.current.panX + deltaX,
+          y: touchStartRef.current.panY + deltaY,
+        })
+      } else if (touches.length === 2 && touchStartRef.current.touches.length === 2) {
+        // Two touch zoom + pan
+        const startDistance = getTouchDistance(touchStartRef.current.touches)
+        const currentDistance = getTouchDistance(touches)
+        const startCenter = getTouchCenter(touchStartRef.current.touches)
+        const currentCenter = getTouchCenter(touches)
+
+        if (startDistance > 0) {
+          // Calculate zoom
+          const zoomFactor = currentDistance / startDistance
+          const newZoom = Math.max(0.3, Math.min(3, touchStartRef.current.zoom * zoomFactor))
+          setZoom(newZoom)
+
+          // Calculate pan with zoom compensation
+          const deltaX = currentCenter.x - startCenter.x
+          const deltaY = currentCenter.y - startCenter.y
+
+          setPanOffset({
+            x: touchStartRef.current.panX + deltaX,
+            y: touchStartRef.current.panY + deltaY,
+          })
+        }
+      }
+    }
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!isNavigationMode) return
+
+      if (e.touches.length === 0) {
+        setIsPanning(false)
+        touchStartRef.current = null
+      } else if (e.touches.length === 1 && touchStartRef.current) {
+        // Continue with single touch if we had two touches
+        touchStartRef.current = {
+          touches: e.touches,
+          panX: panOffset.x,
+          panY: panOffset.y,
+          zoom: zoom
+        }
+      }
+    }
+
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
 
@@ -346,16 +457,22 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
 
     container.addEventListener("mousedown", handleMouseDown)
     container.addEventListener("wheel", handleWheel, { passive: false })
+    container.addEventListener("touchstart", handleTouchStart, { passive: false })
+    container.addEventListener("touchmove", handleTouchMove, { passive: false })
+    container.addEventListener("touchend", handleTouchEnd, { passive: false })
     document.addEventListener("mousemove", handleMouseMove)
     document.addEventListener("mouseup", handleMouseUp)
 
     return () => {
       container.removeEventListener("mousedown", handleMouseDown)
       container.removeEventListener("wheel", handleWheel)
+      container.removeEventListener("touchstart", handleTouchStart)
+      container.removeEventListener("touchmove", handleTouchMove)
+      container.removeEventListener("touchend", handleTouchEnd)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
     }
-  }, [isPanning, panOffset, zoom])
+  }, [isPanning, panOffset, zoom, isNavigationMode])
 
   const handleZoomIn = () => {
     setZoom((prev) => Math.min(prev + 0.1, 3))
@@ -1022,6 +1139,20 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
 
               <div className="w-px h-6 bg-gray-300 mx-2" />
 
+              {/* Navigation Mode Toggle */}
+              <Button
+                variant={isNavigationMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => setIsNavigationMode(!isNavigationMode)}
+                title={isNavigationMode ? "Switch to Edit Mode" : "Switch to Navigation Mode (for mobile pan/zoom)"}
+                className="md:hidden" // Only show on mobile
+              >
+                <Move className="w-4 h-4" />
+                {isNavigationMode ? "Nav" : "Edit"}
+              </Button>
+
+              <div className="w-px h-6 bg-gray-300 mx-2 md:hidden" />
+
               <Button
                 variant={hasUnsavedChanges ? "default" : "outline"}
                 size="sm"
@@ -1064,7 +1195,13 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
           className="flex-1 relative overflow-hidden"
           style={{
             backgroundColor: zone.backgroundColor,
-            cursor: isPanning ? "grabbing" : drawingMode ? "crosshair" : "default",
+            cursor: isPanning
+              ? "grabbing"
+              : isNavigationMode
+                ? "grab"
+                : drawingMode
+                  ? "crosshair"
+                  : "default",
           }}
         >
           <div
@@ -1291,6 +1428,17 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
         >
           <Palette className="w-4 h-4" color={!drawingMode ? "black" : "white"} />
         </Button>
+      )}
+
+      {/* Navigation Mode Indicator */}
+      {isNavigationMode && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
+          <div className="bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+            <Move className="w-4 h-4" />
+            <span className="text-sm font-medium">Navigation Mode</span>
+            <span className="text-xs opacity-80">• 1 finger: Pan • 2 fingers: Zoom</span>
+          </div>
+        </div>
       )}
 
       {/* Hidden UI Toggle */}
