@@ -346,8 +346,10 @@ export default function DrawingTool({
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 z-30"
+      className="absolute z-30"
       style={{
+        top: '-5000px',
+        left: '-5000px',
         pointerEvents: isActive ? "auto" : "none",
         cursor: isActive
           ? mode === "eraser"
