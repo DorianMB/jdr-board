@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { exportData, importData, loadAppData, saveAppData } from "@/lib/storage"
 import type { AppData, Character, Zone } from "@/lib/types"
 import { Download, Edit, Map, Plus, Trash2, Upload, Users, Zap, CheckSquare, Square } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -319,12 +320,27 @@ export default function HomePage() {
     setSelectedCharactersToDelete(newSelected)
   }
 
+
   const selectAllCharacters = () => {
     setSelectedCharactersToDelete(new Set(data.characters.map(c => c.id)))
   }
 
   const deselectAllCharacters = () => {
     setSelectedCharactersToDelete(new Set())
+  }
+
+  // Sélection/désélection par type
+  const selectAllCharactersOfType = (type: "player" | "ally" | "enemy") => {
+    const ids = data.characters.filter(c => c.type === type).map(c => c.id)
+    setSelectedCharactersToDelete(prev => new Set([...prev, ...ids]))
+  }
+
+  const deselectAllCharactersOfType = (type: "player" | "ally" | "enemy") => {
+    setSelectedCharactersToDelete(prev => {
+      const newSet = new Set(prev)
+      data.characters.filter(c => c.type === type).forEach(c => newSet.delete(c.id))
+      return newSet
+    })
   }
 
   const deleteSelectedCharacters = () => {
@@ -970,15 +986,52 @@ export default function HomePage() {
                   enemy: "text-red-700 border-red-200"
                 }
 
+                // Calcul de l'état de sélection du groupe
+                const allSelected = charactersOfType.every(c => selectedCharactersToDelete.has(c.id))
+                const noneSelected = charactersOfType.every(c => !selectedCharactersToDelete.has(c.id))
+                const partiallySelected = !allSelected && !noneSelected
+
+                // Couleur d'icône selon le type
+                const iconColor = type === "player" ? "text-green-600 hover:text-green-800" : type === "ally" ? "text-blue-600 hover:text-blue-800" : "text-red-600 hover:text-red-800"
+
                 return (
                   <div key={type} className="space-y-2">
-                    <h3 className={`font-medium text-sm ${typeColors[type]} border-b pb-1`}>
-                      {typeLabels[type]} ({charactersOfType.length})
-                    </h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className={`font-medium text-sm ${typeColors[type]} border-b pb-1 flex items-center gap-2`}>
+                        {typeLabels[type]} ({charactersOfType.length})
+                      </h3>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              aria-label={allSelected ? `Désélectionner tous les ${typeLabels[type]}` : `Sélectionner tous les ${typeLabels[type]}`}
+                              className={`p-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${type === "player" ? "green" : type === "ally" ? "blue" : "red"}-400`}
+                              onClick={() => {
+                                if (allSelected || partiallySelected) {
+                                  deselectAllCharactersOfType(type)
+                                } else {
+                                  selectAllCharactersOfType(type)
+                                }
+                              }}
+                            >
+                              {allSelected ? (
+                                <CheckSquare className={`w-5 h-5 ${iconColor}`} />
+                              ) : (
+                                <Square className={`w-5 h-5 ${iconColor}`} />
+                              )}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="text-xs">
+                            {allSelected || partiallySelected
+                              ? `Désélectionner tous les ${typeLabels[type].toLowerCase()}`
+                              : `Sélectionner tous les ${typeLabels[type].toLowerCase()}`}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {charactersOfType.map((character) => {
                         const isSelected = selectedCharactersToDelete.has(character.id)
-
                         return (
                           <div
                             key={character.id}
