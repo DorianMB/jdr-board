@@ -69,6 +69,7 @@ export default function HomePage() {
           challenge: typeof m.cr === 'object' ? m.cr.cr || m.cr[0]?.cr || '?' : m.cr,
           description: (typeof m.type === 'object' && m.type !== null ? m.type.type : m.type) + (m.size ? ` ${m.size}` : ''),
           category: typeof m.type === 'object' && m.type !== null ? m.type.type : (m.type || 'Autre'),
+          reprintedAs: m.reprintedAs ? m.reprintedAs[0].split("|") : '',
         }));
         setApiEnemies(monsters);
       })
@@ -267,11 +268,12 @@ export default function HomePage() {
       const existingCharacterIndex = updatedCharacters.findIndex(
         char => char.name === enemy.name && char.type === "enemy"
       );
+      console.log("test", enemy);
       const characterData: Character = {
         id: existingCharacterIndex >= 0 ? updatedCharacters[existingCharacterIndex].id : `enemy_${enemy.name.replace(/\s/g, '_')}_${enemy.category.replace(/\s/g, '_')}`,
         name: enemy.name,
         type: "enemy" as const,
-        imageUrl: "",
+        imageUrl: enemy.reprintedAs ? `https://5e.tools/img/bestiary/tokens/${enemy.reprintedAs[1]}/${enemy.reprintedAs[0]}.webp` : '',
       };
       if (existingCharacterIndex >= 0) {
         updatedCharacters[existingCharacterIndex] = characterData;
@@ -446,7 +448,7 @@ export default function HomePage() {
                 <Button variant="outline" onClick={() => {
                   // Présélectionner tous les ennemis la première fois
                   if (selectedEnemies.size === 0 && apiEnemies.length > 0) {
-                    setSelectedEnemies(new Set(Array.from({ length: apiEnemies.length }, (_, i) => i)))
+                    setSelectedEnemies(new Set(apiEnemies.map(enemy => `${enemy.name}-${enemy.category}-${enemy.challenge}`)))
                   }
                   setShowGenerateEnemiesDialog(true)
                 }}>
@@ -865,7 +867,6 @@ export default function HomePage() {
                               const cat = typeof enemy.category === 'object' && enemy.category !== null ? enemy.category.type : enemy.category;
                               const uniqueKey = `${enemy.name}-${cat}-${String(enemy.challenge)}`;
                               const isSelected = selectedEnemies.has(uniqueKey);
-                              console.log(`Rendering enemy: ${enemy.name}, key: ${uniqueKey}, description: ${enemy.description}`);
                               const existingCharacter = data.characters.find(
                                 char => char.name === enemy.name && char.type === "enemy"
                               );

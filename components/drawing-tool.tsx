@@ -43,9 +43,6 @@ export default function DrawingTool({
     const scaleX = canvas.width / rect.width
     const scaleY = canvas.height / rect.height
 
-    console.log("Canvas rect:", rect)
-    console.log("Canvas size:", canvas.width, canvas.height)
-
     // Get coordinates relative to canvas
     const x = (e.clientX - rect.left) * scaleX
     const y = (e.clientY - rect.top) * scaleY
