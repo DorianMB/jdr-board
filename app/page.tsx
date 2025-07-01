@@ -914,7 +914,7 @@ export default function HomePage() {
                 )}
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex justify-end gap-2 py-4 border-t sticky bottom-[-25px] bg-white">
                 <Button variant="outline" onClick={() => setShowGenerateEnemiesDialog(false)}>
                   Cancel
                 </Button>
@@ -1028,7 +1028,7 @@ export default function HomePage() {
               })}
             </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t">
+            <div className="flex justify-end gap-2 py-4 border-t sticky bottom-[-25px] bg-white">
               <Button variant="outline" onClick={() => setShowDeleteCharactersDialog(false)}>
                 Cancel
               </Button>
