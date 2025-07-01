@@ -133,20 +133,21 @@ export default function TokenComponent({
         })`}
     >
       <div className="relative w-full h-full">
-        {character.imageUrl ? (
+        {character.imageUrl && (
           <img
             src={character.imageUrl || "/placeholder.svg"}
             alt={character.name}
             className="w-full h-full rounded-full object-cover"
             draggable={false}
           />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            {/^[a-zA-Z]/.test(character.name)
-              ? character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
-              : character.name.replace(/\D/g, "")}
-          </div>
         )}
+        <div
+          className={`absolute inset-0 flex items-center justify-center pointer-events-none select-none ${character.imageUrl ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]" : ""}`}
+        >
+          {/^[a-zA-Z]/.test(character.name)
+            ? character.name.charAt(0).toUpperCase() + character.name.replace(/\D/g, "")
+            : character.name.replace(/\D/g, "")}
+        </div>
         {/* Afficher le numéro en petit en bas à droite si nécessaire */}
         {tokenNumber && (
           <div className="absolute -bottom-1 -right-1 bg-white border border-gray-300 rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold text-gray-700">
