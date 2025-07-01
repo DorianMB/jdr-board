@@ -622,7 +622,7 @@ export default function HomePage() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                      <h3 className="text-lg font-semibold text-red-700">Ennemis</h3>
+                      <h3 className="text-lg font-semibold text-red-700">{t('enemy')}</h3>
                       <div className="flex-1 h-px bg-red-200"></div>
                       <span className="text-sm text-red-600 bg-red-50 px-2 py-1 rounded-full">
                         {data.characters.filter(c => c.type === "enemy").length}
@@ -844,27 +844,29 @@ export default function HomePage() {
       <Dialog open={showGenerateEnemiesDialog} onOpenChange={setShowGenerateEnemiesDialog}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Generate D&D Enemies</DialogTitle>
+            <DialogTitle>{t('generateEnemiesModalTitle')}</DialogTitle>
           </DialogHeader>
           <ClientOnly>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <p className="text-sm text-gray-600">
-                  Select the enemies you want to add to your collection ({selectedEnemies.size} selected):
+                  {t('generateEnemiesModalDescription', { count: selectedEnemies.size })}
                 </p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={selectAllEnemies}>
-                    Select All
+                    {t('selectAll')}
                   </Button>
                   <Button variant="outline" size="sm" onClick={deselectAllEnemies}>
-                    Deselect All
+                    {t('deselectAll')}
                   </Button>
                 </div>
               </div>
 
               <div className="space-y-6">
                 {/* Grouper les ennemis par catégorie depuis l'API */}
-                {apiEnemiesLoading && <div className="text-center py-4">Chargement des monstres...</div>}
+                {apiEnemiesLoading && <div className="text-center py-4">
+                  {t('generateEnemiesModalLoading')}
+                </div>}
                 {apiEnemiesError && <div className="text-red-500 text-center py-4">{apiEnemiesError}</div>}
                 {!apiEnemiesLoading && !apiEnemiesError && apiEnemies.length > 0 && (
                   // On extrait toutes les catégories, en prenant category.type si c'est un objet
@@ -932,14 +934,14 @@ export default function HomePage() {
 
               <div className="flex justify-end gap-2 py-4 border-t sticky bottom-[-25px] bg-white">
                 <Button variant="outline" onClick={() => setShowGenerateEnemiesDialog(false)}>
-                  Cancel
+                  {t('generateEnemiesModalCancel')}
                 </Button>
                 <Button
                   onClick={generateBasicEnemies}
                   disabled={selectedEnemies.size === 0}
                 >
                   <Zap className="w-4 h-4 mr-2" />
-                  Generate {selectedEnemies.size} Enemies
+                  {t('generateEnemiesModalValidation', { count: selectedEnemies.size })}
                 </Button>
               </div>
             </div>
@@ -951,19 +953,21 @@ export default function HomePage() {
       <Dialog open={showDeleteCharactersDialog} onOpenChange={setShowDeleteCharactersDialog}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Delete Characters</DialogTitle>
+            <DialogTitle>{t('deleteMultipleCharactersModalTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <p className="text-sm text-gray-600">
-                Select the characters you want to delete ({selectedCharactersToDelete.size} selected):
+                {t('deleteMultipleCharactersModalDescription', {
+                  count: selectedCharactersToDelete.size
+                })}
               </p>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllCharacters}>
-                  Select All
+                  {t('selectAll')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={deselectAllCharacters}>
-                  Deselect All
+                  {t('deselectAll')}
                 </Button>
               </div>
             </div>
@@ -1083,7 +1087,7 @@ export default function HomePage() {
 
             <div className="flex justify-end gap-2 py-4 border-t sticky bottom-[-25px] bg-white">
               <Button variant="outline" onClick={() => setShowDeleteCharactersDialog(false)}>
-                Cancel
+                {t('deleteMultipleCharactersModalCancel')}
               </Button>
               <Button
                 onClick={deleteSelectedCharacters}
@@ -1091,7 +1095,7 @@ export default function HomePage() {
                 variant="destructive"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Delete {selectedCharactersToDelete.size} Characters
+                {t('deleteMultipleCharactersModalValidation', { count: selectedCharactersToDelete.size })}
               </Button>
             </div>
           </div>

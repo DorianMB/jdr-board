@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Character } from "@/lib/types"
 import { useState } from "react"
+import { useLanguage } from '@/hooks/use-language'
 
 interface CreateCharacterFormProps {
     onCharacterCreated: (character: Character) => void
@@ -13,6 +14,7 @@ interface CreateCharacterFormProps {
 }
 
 export default function CreateCharacterForm({ onCharacterCreated, onCancel }: CreateCharacterFormProps) {
+    const { t } = useLanguage();
     const [name, setName] = useState("")
     const [type, setType] = useState<"player" | "ally" | "enemy">("player")
     const [imageUrl, setImageUrl] = useState("")
@@ -51,33 +53,33 @@ export default function CreateCharacterForm({ onCharacterCreated, onCancel }: Cr
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <Label htmlFor="character-name">Character Name *</Label>
+                <Label htmlFor="character-name">{t('characterName')} *</Label>
                 <Input
                     id="character-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter character name..."
+                    placeholder={t('characterName') + '...'}
                     className="mt-1"
                     required
                 />
             </div>
 
             <div>
-                <Label htmlFor="character-type">Character Type</Label>
+                <Label htmlFor="character-type">{t('characterType')}</Label>
                 <Select value={type} onValueChange={(value: "player" | "ally" | "enemy") => setType(value)}>
                     <SelectTrigger className="mt-1">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="player">Joueur</SelectItem>
-                        <SelectItem value="ally">Allié</SelectItem>
-                        <SelectItem value="enemy">Ennemi</SelectItem>
+                        <SelectItem value="player">{t('player')}</SelectItem>
+                        <SelectItem value="ally">{t('ally')}</SelectItem>
+                        <SelectItem value="enemy">{t('enemy')}</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
 
             <div>
-                <Label htmlFor="character-image">Character Image URL (optional)</Label>
+                <Label htmlFor="character-image">{t('imageUrl')} ({t('optional') || 'optional'})</Label>
                 <Input
                     id="character-image"
                     type="url"
@@ -88,7 +90,7 @@ export default function CreateCharacterForm({ onCharacterCreated, onCancel }: Cr
                 />
                 {imageUrl && (
                     <div className="mt-2">
-                        <div className="text-sm text-gray-600 mb-1">Preview:</div>
+                        <div className="text-sm text-gray-600 mb-1">{t('preview') || 'Preview:'}</div>
                         <div className="flex items-center gap-2">
                             <div
                                 className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-white font-bold text-sm ${type === "player"
@@ -100,7 +102,7 @@ export default function CreateCharacterForm({ onCharacterCreated, onCancel }: Cr
                             >
                                 <img
                                     src={imageUrl}
-                                    alt="Character preview"
+                                    alt={t('characterPreviewAlt') || 'Character preview'}
                                     className="w-full h-full rounded-full object-cover"
                                     onError={(e) => {
                                         // Fallback to initials if image fails to load
@@ -112,7 +114,7 @@ export default function CreateCharacterForm({ onCharacterCreated, onCancel }: Cr
                                 <span className="hidden"></span>
                             </div>
                             <div className="text-sm text-gray-600">
-                                {name || "Character Name"} ({type === "player" ? "Joueur" : type === "ally" ? "Allié" : "Ennemi"})
+                                {name || t('characterName')} ({type === "player" ? t('player') : type === "ally" ? t('ally') : t('enemy')})
                             </div>
                         </div>
                     </div>
@@ -121,10 +123,10 @@ export default function CreateCharacterForm({ onCharacterCreated, onCancel }: Cr
 
             <div className="flex justify-end gap-2 pt-4 border-t">
                 <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-                    Cancel
+                    {t('cancel')}
                 </Button>
                 <Button type="submit" disabled={!name.trim() || isSubmitting}>
-                    {isSubmitting ? "Creating..." : "Create Character"}
+                    {isSubmitting ? (t('creating') || 'Creating...') : (t('createCharacter') || 'Create Character')}
                 </Button>
             </div>
         </form>

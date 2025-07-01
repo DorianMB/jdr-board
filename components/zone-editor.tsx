@@ -826,11 +826,11 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Zone Settings</DialogTitle>
+            <DialogTitle>{t('zoneSettingsModalTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
             <div>
-              <Label>Grid Opacity</Label>
+              <Label>{t('zoneSettingsModalGridOpacity')}</Label>
               <Slider
                 value={[zone.gridOpacity]}
                 onValueChange={handleGridOpacityChange}
@@ -842,7 +842,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
             </div>
 
             <div>
-              <Label>Grid Color</Label>
+              <Label>{t('zoneSettingsModalGridColor')}</Label>
               <input
                 type="color"
                 value={zone.gridColor}
@@ -852,7 +852,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
             </div>
 
             <div>
-              <Label>Background Color</Label>
+              <Label>{t('zoneSettingsModalBackgroundColor')}</Label>
               <input
                 type="color"
                 value={zone.backgroundColor}
@@ -862,10 +862,10 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
             </div>
 
             <div>
-              <Label>Background Image URL</Label>
+              <Label>{t('zoneSettingsModalBackgroundImageUrl')}</Label>
               <Input
                 type="url"
-                placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                placeholder={t('zoneSettingsModalBackgroundImageUrlPlaceholder')}
                 value={backgroundImageUrl}
                 onChange={(e) => {
                   setBackgroundImageUrl(e.target.value)
@@ -877,7 +877,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
 
             {zone.backgroundImage && (
               <div>
-                <Label>Image Rotation</Label>
+                <Label>{t('zoneSettingsModalBackgroundImageRotation')}</Label>
                 <div className="flex items-center gap-2 mt-2">
                   <Button
                     variant="outline"
@@ -1101,7 +1101,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
         <OverlayMenu
           isOpen={showCharacterMenu}
           onClose={() => setShowCharacterMenu(false)}
-          title="Characters on Board"
+          title={t('characterMenuTitle')}
           side="left"
         >
           <div className="space-y-3">
@@ -1153,7 +1153,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         <Label htmlFor={`dead-${token.id}`} className="text-xs">
-                          Dead
+                          {t('characterMenuDead')}
                         </Label>
                         <Switch
                           id={`dead-${token.id}`}
@@ -1183,19 +1183,22 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
             )}
           </div>
         </OverlayMenu>
-      )}
+      )
+      }
 
       {/* Character Menu Trigger */}
-      {showUI && (
-        <Button
-          variant="outline"
-          size="sm"
-          className={`fixed left-4 top-20 z-50 ${showCharacterMenu ? 'bg-black text-white' : 'bg-white'} hover:text-white hover:bg-black`}
-          onClick={() => setShowCharacterMenu(!showCharacterMenu)}
-        >
-          {t('characters')} ({charactersOnBoard.length})
-        </Button>
-      )}
+      {
+        showUI && (
+          <Button
+            variant="outline"
+            size="sm"
+            className={`fixed left-4 top-20 z-50 ${showCharacterMenu ? 'bg-black text-white' : 'bg-white'} hover:text-white hover:bg-black`}
+            onClick={() => setShowCharacterMenu(!showCharacterMenu)}
+          >
+            {t('characters')} ({charactersOnBoard.length})
+          </Button>
+        )
+      }
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
@@ -1208,7 +1211,7 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
               </Button>
               <h1 className="font-semibold">{zone.name}</h1>
               {hasUnsavedChanges && (
-                <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">Unsaved changes</span>
+                <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">{t('unsavedChanges')}</span>
               )}
             </div>
 
@@ -1252,7 +1255,6 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                {!isSaving && !saveSuccess && "Save"}
               </Button>
 
               <div className="w-px h-6 bg-gray-300 mx-2" />
@@ -1431,174 +1433,182 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
       </div>
 
       {/* Right Drawing Tools Sidebar */}
-      {showUI && (
-        <OverlayMenu
-          isOpen={showBrushMenu}
-          onClose={() => setShowBrushMenu(false)}
-          title="Drawing Tools"
-          side="right"
-        >
-          <div className="space-y-6">
-            {/* Tool Selection */}
-            <div>
-              <Label className="text-sm font-medium">Tool</Label>
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                <Button
-                  variant={drawingMode === "brush" ? "default" : "outline"}
-                  onClick={() => setDrawingMode(drawingMode === "brush" ? null : "brush")}
-                  className="flex items-center gap-2"
-                >
-                  <Brush className="w-4 h-4" />
-                  Brush
-                </Button>
-                <Button
-                  variant={drawingMode === "eraser" ? "default" : "outline"}
-                  onClick={() => setDrawingMode(drawingMode === "eraser" ? null : "eraser")}
-                  className="flex items-center gap-2"
-                >
-                  <Eraser className="w-4 h-4" />
-                  Eraser
-                </Button>
-                <Button
-                  variant={drawingMode === "shapes" ? "default" : "outline"}
-                  onClick={() => setDrawingMode(drawingMode === "shapes" ? null : "shapes")}
-                  className="flex items-center gap-2"
-                >
-                  <Shapes className="w-4 h-4" />
-                  Shapes
-                </Button>
-              </div>
-            </div>
-
-            {/* Shape Selection (only for shapes mode) */}
-            {drawingMode === "shapes" && (
+      {
+        showUI && (
+          <OverlayMenu
+            isOpen={showBrushMenu}
+            onClose={() => setShowBrushMenu(false)}
+            title={t('drawingToolsMenuTitle')}
+            side="right"
+          >
+            <div className="space-y-6">
+              {/* Tool Selection */}
               <div>
-                <Label className="text-sm font-medium">Shape Type</Label>
+                <Label className="text-sm font-medium">{t('drawingToolsMenuTool')}</Label>
                 <div className="grid grid-cols-3 gap-2 mt-2">
                   <Button
-                    variant={shapeType === "rectangle" ? "default" : "outline"}
-                    onClick={() => setShapeType("rectangle")}
+                    variant={drawingMode === "brush" ? "default" : "outline"}
+                    onClick={() => setDrawingMode(drawingMode === "brush" ? null : "brush")}
                     className="flex items-center gap-2"
                   >
-                    <Square className="w-4 h-4" />
-                    Rectangle
+                    <Brush className="w-4 h-4" />
+                    {t('drawingToolsMenuBrush')}
                   </Button>
                   <Button
-                    variant={shapeType === "circle" ? "default" : "outline"}
-                    onClick={() => setShapeType("circle")}
+                    variant={drawingMode === "eraser" ? "default" : "outline"}
+                    onClick={() => setDrawingMode(drawingMode === "eraser" ? null : "eraser")}
                     className="flex items-center gap-2"
                   >
-                    <Circle className="w-4 h-4" />
-                    Circle
+                    <Eraser className="w-4 h-4" />
+                    {t('drawingToolsMenuEraser')}
                   </Button>
                   <Button
-                    variant={shapeType === "line" ? "default" : "outline"}
-                    onClick={() => setShapeType("line")}
+                    variant={drawingMode === "shapes" ? "default" : "outline"}
+                    onClick={() => setDrawingMode(drawingMode === "shapes" ? null : "shapes")}
                     className="flex items-center gap-2"
                   >
-                    <Minus className="w-4 h-4" />
-                    Line
+                    <Shapes className="w-4 h-4" />
+                    {t('drawingToolsMenuShapes')}
                   </Button>
                 </div>
               </div>
-            )}
 
-            {/* Color Selection (for brush and shapes) */}
-            {(drawingMode === "brush" || drawingMode === "shapes") && (
-              <div>
-                <Label className="text-sm font-medium">Border Color</Label>
-                <input
-                  type="color"
-                  value={drawColor}
-                  onChange={(e) => setDrawColor(e.target.value)}
-                  className="mt-2 w-full h-12 rounded border"
-                />
-              </div>
-            )}
+              {/* Shape Selection (only for shapes mode) */}
+              {drawingMode === "shapes" && (
+                <div>
+                  <Label className="text-sm font-medium">{t('drawingToolsMenuShapeType')}</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    <Button
+                      variant={shapeType === "rectangle" ? "default" : "outline"}
+                      onClick={() => setShapeType("rectangle")}
+                      className="flex items-center gap-2"
+                    >
+                      <Square className="w-4 h-4" />
+                      {t('drawingToolsMenuShapeRectangle')}
+                    </Button>
+                    <Button
+                      variant={shapeType === "circle" ? "default" : "outline"}
+                      onClick={() => setShapeType("circle")}
+                      className="flex items-center gap-2"
+                    >
+                      <Circle className="w-4 h-4" />
+                      {t('drawingToolsMenuShapeCircle')}
+                    </Button>
+                    <Button
+                      variant={shapeType === "line" ? "default" : "outline"}
+                      onClick={() => setShapeType("line")}
+                      className="flex items-center gap-2"
+                    >
+                      <Minus className="w-4 h-4" />
+                      {t('drawingToolsMenuShapeLine')}
+                    </Button>
+                  </div>
+                </div>
+              )}
 
-            {/* Thickness */}
-            <div>
-              <Label className="text-sm font-medium">
-                {drawingMode === "eraser" ? "Eraser Size" : drawingMode === "shapes" ? "Border Thickness" : "Brush Size"}: {drawThickness}px
-              </Label>
-              <Slider
-                value={[drawThickness]}
-                onValueChange={(value) => setDrawThickness(value[0])}
-                max={20}
-                min={1}
-                step={1}
-                className="mt-2"
-              />
-            </div>
-
-            {/* Fill Options (only for shapes) */}
-            {drawingMode === "shapes" && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Fill Shape</Label>
-                  <Switch
-                    checked={hasFill}
-                    onCheckedChange={setHasFill}
+              {/* Color Selection (for brush and shapes) */}
+              {(drawingMode === "brush" || drawingMode === "shapes") && (
+                <div>
+                  <Label className="text-sm font-medium">{t('drawingToolsMenuBorderColor')}</Label>
+                  <input
+                    type="color"
+                    value={drawColor}
+                    onChange={(e) => setDrawColor(e.target.value)}
+                    className="mt-2 w-full h-12 rounded border"
                   />
                 </div>
-                {hasFill && (
-                  <div>
-                    <Label className="text-sm font-medium">Fill Color</Label>
-                    <input
-                      type="color"
-                      value={fillColor}
-                      onChange={(e) => setFillColor(e.target.value)}
-                      className="mt-2 w-full h-12 rounded border"
+              )}
+
+              {/* Thickness */}
+              <div>
+                <Label className="text-sm font-medium">
+                  {drawingMode === "eraser" ? t('drawingToolsMenuEraserSize') : drawingMode === "shapes" ? t('drawingToolsMenuBorderThickness') : t('drawingToolsMenuBrushSize')}: {drawThickness}px
+                </Label>
+                <Slider
+                  value={[drawThickness]}
+                  onValueChange={(value) => setDrawThickness(value[0])}
+                  max={20}
+                  min={1}
+                  step={1}
+                  className="mt-2"
+                />
+              </div>
+
+              {/* Fill Options (only for shapes) */}
+              {drawingMode === "shapes" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">{t('drawingToolsMenuFillShape')}</Label>
+                    <Switch
+                      checked={hasFill}
+                      onCheckedChange={setHasFill}
                     />
                   </div>
-                )}
-              </div>
-            )}
+                  {hasFill && (
+                    <div>
+                      <Label className="text-sm font-medium">{t('drawingToolsMenuFillColor')}</Label>
+                      <input
+                        type="color"
+                        value={fillColor}
+                        onChange={(e) => setFillColor(e.target.value)}
+                        className="mt-2 w-full h-12 rounded border"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
-            {/* Actions */}
-            <div className="space-y-2">
-              <Button variant="outline" onClick={undo} className="w-full bg-transparent">
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Undo Last Action
-              </Button>
-              <Button variant="outline" onClick={clearDrawings} className="w-full bg-transparent">
-                <X className="w-4 h-4 mr-2" />
-                Clear All Drawings
-              </Button>
+              {/* Actions */}
+              <div className="space-y-2">
+                <Button variant="outline" onClick={undo} className="w-full bg-transparent">
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  {t('drawingToolsMenuUndo')}
+                </Button>
+                <Button variant="outline" onClick={clearDrawings} className="w-full bg-transparent">
+                  <X className="w-4 h-4 mr-2" />
+                  {t('drawingToolsMenuClear')}
+                </Button>
+              </div>
             </div>
-          </div>
-        </OverlayMenu>
-      )}
+          </OverlayMenu>
+        )
+      }
 
       {/* Drawing Tools Trigger */}
-      {showUI && (
-        <Button
-          variant="outline"
-          size="sm"
-          className={`fixed right-4 top-20 z-50 [&_svg]:hover:stroke-white hover:bg-black ${showBrushMenu ? "bg-black text-white" : "bg-white"}`}
-          onClick={() => setShowBrushMenu(!showBrushMenu)}
-        >
-          <Palette className="w-4 h-4" color={showBrushMenu ? "white" : "black"} />
-        </Button>
-      )}
+      {
+        showUI && (
+          <Button
+            variant="outline"
+            size="sm"
+            className={`fixed right-4 top-20 z-50 [&_svg]:hover:stroke-white hover:bg-black ${showBrushMenu ? "bg-black text-white" : "bg-white"}`}
+            onClick={() => setShowBrushMenu(!showBrushMenu)}
+          >
+            <Palette className="w-4 h-4" color={showBrushMenu ? "white" : "black"} />
+          </Button>
+        )
+      }
 
       {/* Navigation Mode Indicator */}
-      {isNavigationMode && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
-          <div className="bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
-            <Move className="w-4 h-4" />
-            <span className="text-sm font-medium">Navigation Mode</span>
-            <span className="text-xs opacity-80">• 1 finger: Pan • 2 fingers: Zoom</span>
+      {
+        isNavigationMode && (
+          <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
+            <div className="bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+              <Move className="w-4 h-4" />
+              <span className="text-sm font-medium">Navigation Mode</span>
+              <span className="text-xs opacity-80">• 1 finger: Pan • 2 fingers: Zoom</span>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Hidden UI Toggle */}
-      {!showUI && (
-        <Button className="fixed top-4 right-4 z-50 hover:text-white" onClick={() => setShowUI(true)}>
-          Show UI
-        </Button>
-      )}
-    </div>
+      {
+        !showUI && (
+          <Button className="fixed top-4 right-4 z-50 hover:text-white" onClick={() => setShowUI(true)}>
+            Show UI
+          </Button>
+        )
+      }
+    </div >
   )
 }

@@ -1,3 +1,5 @@
+import DrawingTool from "@/components/drawing-tool"
+
 export const translations = {
     fr: {
         // Header
@@ -33,7 +35,7 @@ export const translations = {
         createCharacter: "Créer un personnage",
         editCharacter: "Modifier le personnage",
         deleteCharacter: "Supprimer le personnage",
-        deleteSelected: "Supprimer la sélection",
+        deleteSelected: "Supprimer plusieurs personnages",
         generateEnemies: "Générer des ennemis",
 
         // Zone Management
@@ -56,9 +58,24 @@ export const translations = {
         tokens: "tokens",
         addToken: "Ajouter un token",
 
+        // Select All / Deselect All
+        selectAll: "Tout sélectionner",
+        deselectAll: "Tout désélectionner",
+
         // Enemy Generation
         selectEnemies: "Sélectionner les ennemis à générer",
         selectedCount: "{count} ennemis sélectionnés",
+        generateEnemiesModalTitle: "Générer des ennemis D&D",
+        generateEnemiesModalDescription: "Sélectionnez les ennemis à ajouter à votre collection ({count} sélectionné(s)) :",
+        generateEnemiesModalLoading: "Chargement des monstres...",
+        generateEnemiesModalValidation: "Générez {count} Ennemis",
+        generateEnemiesModalCancel: "Annuler",
+
+        // Delete Multiple Characters
+        deleteMultipleCharactersModalTitle: "Supprimer plusieurs personnages",
+        deleteMultipleCharactersModalDescription: "Sélectionnez les personnages à supprimer ({count} sélectionné(s)) :",
+        deleteMultipleCharactersModalValidation: "Supprimer {count} Personnages",
+        deleteMultipleCharactersModalCancel: "Annuler",
 
         // Categories
         humanoids: "Humanoïdes",
@@ -112,6 +129,56 @@ export const translations = {
         selectCharacter: "Sélectionner un personnage",
         found: "trouvé(s)",
         createNew: "Créer nouveau"
+        ,
+        // Create Character Form
+        optional: "optionnel",
+        preview: "Aperçu:",
+        characterPreviewAlt: "Aperçu du personnage",
+        creating: "Création..."
+        ,
+        // Monster Search
+        monsterSearchPlaceholder: "Rechercher un monstre...",
+        monsterSearchLoading: "Chargement...",
+        monsterSearchNoResult: "Aucun monstre trouvé",
+        monsterSearchName: "Nom",
+        monsterSearchCR: "CR",
+        monsterSearchType: "Type",
+        monsterSearchSource: "Source",
+        monsterSearchHP: "PV",
+        monsterSearchError: "Erreur lors de la récupération des données",
+        monsterSearchUnknownError: "Erreur inconnue",
+
+        // Zone Editor Character Menu
+        characterMenuTitle: "Personnages sur le plateau",
+        characterMenuDead: "Mort",
+
+        // Zone Editor Drawing Tools
+        drawingToolsMenuTitle: "Outils de dessin",
+        drawingToolsMenuBrush: "Pinceau",
+        drawingToolsMenuEraser: "Gomme",
+        drawingToolsMenuShapes: "Formes",
+        drawingToolsMenuTool: "Outil",
+        drawingToolsMenuBrushSize: "Taille du pinceau",
+        drawingToolsMenuEraserSize: "Taille de la gomme",
+        drawingToolsMenuBorderColor: "Couleur de la bordure",
+        drawingToolsMenuBorderThickness: "Épaisseur de la bordure",
+        drawingToolsMenuShapeType: "Type de forme",
+        drawingToolsMenuFillShape: "Remplir la forme",
+        drawingToolsMenuFillColor: "Couleur de remplissage",
+        drawingToolsMenuShapeRectangle: "Rectangle",
+        drawingToolsMenuShapeCircle: "Cercle",
+        drawingToolsMenuShapeLine: "Ligne",
+        drawingToolsMenuUndo: "Annuler la dernière action",
+        drawingToolsMenuClear: "Supprimer tous les dessins",
+
+        // Zone Settings
+        zoneSettingsModalTitle: "Paramètres de la zone",
+        zoneSettingsModalGridOpacity: "Opacité de la grille",
+        zoneSettingsModalGridColor: "Couleur de la grille",
+        zoneSettingsModalBackgroundColor: "Couleur de fond",
+        zoneSettingsModalBackgroundImageUrl: "URL de l'image de fond",
+        zoneSettingsModalBackgroundImageUrlPlaceholder: "Entrez l'URL de l'image de fond (optionnel)",
+        zoneSettingsModalBackgroundImageRotation: "Rotation de l'image de fond",
     },
     en: {
         // Header
@@ -147,7 +214,7 @@ export const translations = {
         createCharacter: "Create character",
         editCharacter: "Edit character",
         deleteCharacter: "Delete character",
-        deleteSelected: "Delete selected",
+        deleteSelected: "Delete multiple characters",
         generateEnemies: "Generate enemies",
 
         // Zone Management
@@ -170,9 +237,24 @@ export const translations = {
         tokens: "tokens",
         addToken: "Add token",
 
+        // Select All / Deselect All
+        selectAll: "Select All",
+        deselectAll: "Deselect All",
+
         // Enemy Generation
         selectEnemies: "Select enemies to generate",
         selectedCount: "{count} enemies selected",
+        generateEnemiesModalTitle: "Generate D&D Enemies",
+        generateEnemiesModalDescription: "Select the enemies you want to add to your collection ({count} selected):",
+        generateEnemiesModalLoading: "Loading monsters...",
+        generateEnemiesModalValidation: "Generate {count} Enemies",
+        generateEnemiesModalCancel: "Cancel",
+
+        // Delete Multiple Characters
+        deleteMultipleCharactersModalTitle: "Delete Multiple Characters",
+        deleteMultipleCharactersModalDescription: "Select the characters to delete ({count} selected):",
+        deleteMultipleCharactersModalValidation: "Delete {count} Characters",
+        deleteMultipleCharactersModalCancel: "Cancel",
 
         // Categories
         humanoids: "Humanoids",
@@ -226,6 +308,56 @@ export const translations = {
         selectCharacter: "Select a character",
         found: "found",
         createNew: "Create new"
+        ,
+        // Create Character Form
+        optional: "optional",
+        preview: "Preview:",
+        characterPreviewAlt: "Character preview",
+        creating: "Creating..."
+        ,
+        // Monster Search
+        monsterSearchPlaceholder: "Search a monster...",
+        monsterSearchLoading: "Loading...",
+        monsterSearchNoResult: "No monster found",
+        monsterSearchName: "Name",
+        monsterSearchCR: "CR",
+        monsterSearchType: "Type",
+        monsterSearchSource: "Source",
+        monsterSearchHP: "HP",
+        monsterSearchError: "Error while fetching data",
+        monsterSearchUnknownError: "Unknown error",
+
+        // Zone Editor Character Menu
+        characterMenuTitle: "Characters on the board",
+        characterMenuDead: "Dead",
+
+        // Zone Editor Drawing Tools
+        drawingToolsMenuTitle: "Drawing Tools",
+        drawingToolsMenuBrush: "Brush",
+        drawingToolsMenuEraser: "Eraser",
+        drawingToolsMenuShapes: "Shapes",
+        drawingToolsMenuTool: "Tool",
+        drawingToolsMenuBrushSize: "Brush Size",
+        drawingToolsMenuEraserSize: "Eraser Size",
+        drawingToolsMenuBorderColor: "Border Color",
+        drawingToolsMenuBorderThickness: "Border Thickness",
+        drawingToolsMenuShapeType: "Shape Type",
+        drawingToolsMenuFillShape: "Fill Shape",
+        drawingToolsMenuFillColor: "Fill Color",
+        drawingToolsMenuShapeRectangle: "Rectangle",
+        drawingToolsMenuShapeCircle: "Circle",
+        drawingToolsMenuShapeLine: "Line",
+        drawingToolsMenuUndo: "Undo Last Action",
+        drawingToolsMenuClear: "Clear All Drawings",
+
+        // Zone Settings
+        zoneSettingsModalTitle: "Zone Settings",
+        zoneSettingsModalGridOpacity: "Grid Opacity",
+        zoneSettingsModalGridColor: "Grid Color",
+        zoneSettingsModalBackgroundColor: "Background Color",
+        zoneSettingsModalBackgroundImageUrl: "Background Image URL",
+        zoneSettingsModalBackgroundImageUrlPlaceholder: "Enter the background image URL (optional)",
+        zoneSettingsModalBackgroundImageRotation: "Background Image Rotation",
     }
 } as const
 
