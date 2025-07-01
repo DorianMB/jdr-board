@@ -550,11 +550,31 @@ export default function ZoneEditor({ zone: initialZone, editMode }: ZoneEditorPr
     const character = characters.find((c) => c.id === selectedCharacter)
     if (!character) return
 
-    // Position token in center of grid cell
-    const initialGridX = 2 // Start at grid position 2,2
-    const initialGridY = 2
-    const centerX = initialGridX * zone.gridSize + zone.gridSize / 2
-    const centerY = initialGridY * zone.gridSize + zone.gridSize / 2
+    // Calculer le centre de l'écran visible dans le conteneur
+    let centerX = 0
+    let centerY = 0
+    let initialGridX = 0
+    let initialGridY = 0
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      // Centre de l'écran en pixels relatifs au conteneur
+      const screenCenterX = rect.width / 2
+      const screenCenterY = rect.height / 2
+      // Prendre en compte le zoom et le panOffset pour retrouver la position sur la grille
+      const canvasX = (screenCenterX / zoom) - (panOffset.x / zoom)
+      const canvasY = (screenCenterY / zoom) - (panOffset.y / zoom)
+      // Trouver la case de grille la plus proche
+      initialGridX = Math.round(canvasX / zone.gridSize)
+      initialGridY = Math.round(canvasY / zone.gridSize)
+      centerX = initialGridX * zone.gridSize + zone.gridSize / 2
+      centerY = initialGridY * zone.gridSize + zone.gridSize / 2
+    } else {
+      // Fallback : placer au coin haut-gauche
+      initialGridX = 2
+      initialGridY = 2
+      centerX = initialGridX * zone.gridSize + zone.gridSize / 2
+      centerY = initialGridY * zone.gridSize + zone.gridSize / 2
+    }
 
     const newToken: Token = {
       id: Date.now().toString(),
